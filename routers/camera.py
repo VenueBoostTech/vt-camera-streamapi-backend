@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
-from ..database import get_db
-from ..models import camera as camera_model
-from ..schemas import camera as camera_schema
+from database import get_db
+from models import camera as camera_model
+from schemas import camera as camera_schema
 
 router = APIRouter()
 

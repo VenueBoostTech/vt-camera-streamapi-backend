@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
-from ..database import get_db
-from ..models import threat_detection as threat_model
-from ..schemas import threat_detection as threat_schema
+from database import get_db
+from models import threat_detection as threat_model
+from schemas import threat_detection as threat_schema
 
 router = APIRouter()
 

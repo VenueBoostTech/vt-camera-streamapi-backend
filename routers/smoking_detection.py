@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
-from ..database import get_db
-from ..models import smoking_detection as smoking_model
-from ..schemas import smoking_detection as smoking_schema
+from database import get_db
+from models import smoking_detection as smoking_model
+from schemas import smoking_detection as smoking_schema
 
 router = APIRouter()
 

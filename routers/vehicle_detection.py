@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
-from ..database import get_db
-from ..models import vehicle_detection as vehicle_model
-from ..schemas import vehicle_detection as vehicle_schema
+from database import get_db
+from models import vehicle_detection as vehicle_model
+from schemas import vehicle_detection as vehicle_schema
 
 router = APIRouter()
 
