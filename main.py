@@ -2,7 +2,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from routers import camera, entry_exit, analytics, vehicle_detection, smoking_detection, threat_detection, environment, security, staff, vehicle, activity,settings, dashboard
 
-app = FastAPI()
+app = FastAPI(
+    title="VisionTrackAPI"
+)
 
 # CORS middleware setup
 app.add_middleware(
