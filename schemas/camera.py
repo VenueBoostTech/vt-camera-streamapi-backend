@@ -6,6 +6,9 @@ class CameraBase(BaseModel):
     camera_id: str
     rtsp_url: str
     status: bool = True
+    property_id: Optional[str] = None
+    zone_id: Optional[str] = None
+    capabilities: Optional[str] = None  # JSON encoded as a string
 
 class CameraCreate(CameraBase):
     pass

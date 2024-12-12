@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import camera, entry_exit, analytics, vehicle_detection, smoking_detection, threat_detection, environment, security, staff, vehicle, activity,settings, dashboard
+from routers import camera, entry_exit, analytics, vehicle_detection, smoking_detection, threat_detection, environment, security, staff, vehicle, activity,settings, dashboard, property
 
 app = FastAPI(
     title="VisionTrackAPI"
@@ -26,6 +26,7 @@ app.include_router(activity.router, prefix="/optivenue/api/v1/activity", tags=["
 app.include_router(dashboard.router, prefix="/optivenue/api/v1/dashboard", tags=["Dashboard"])
 app.include_router(environment.router, prefix="/optivenue/api/v1/environment", tags=["Environment"])
 app.include_router(security.router, prefix="/vt/api/v1/security", tags=["Security"])
+app.include_router(property.router, prefix="/vt/api/v1/property", tags=["Property"])
 # app.include_router(settings_router, prefix="/settings", tags=["Settings"])
 app.include_router(staff.router, prefix="/optivenue/api/v1/staff", tags=["Staff"])
 app.include_router(vehicle.router, prefix="/optivenue/api/v1/vehicle", tags=["Vehicle"])
