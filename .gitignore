@@ -129,3 +129,29 @@ alembic.ini
 # Project specific
 *.db
 *.sqlite
+
+# Virtual Environment
+venv/
+env/
+.env
+
+# Alembic
+# Don't ignore these:
+# alembic/versions/*.py  (keep your migrations)
+# alembic/env.py
+# alembic/script.py.mako
+# alembic.ini
+
+# But ignore these:
+alembic/versions/__pycache__/
+alembic/__pycache__/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Database
+*.db
+*.sqlite3

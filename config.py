@@ -1,12 +1,12 @@
-import os
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
-    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./visiontrack.db")
-    RTSP_STREAM_URL: str = os.getenv("RTSP_STREAM_URL", "")
-    API_KEY: str = os.getenv("API_KEY", "your-api-key")
+    DATABASE_URL: str = "sqlite:///./visiontrack.db"
+    RTSP_STREAM_URL: str = ""
+    API_KEY: str = "your-api-key"
 
     class Config:
         env_file = ".env"
+        case_sensitive = True
 
 settings = Settings()
