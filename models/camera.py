@@ -9,3 +9,6 @@ class Camera(Base):
     rtsp_url = Column(String)
     status = Column(Boolean, default=True)
     last_active = Column(DateTime)
+    property_id = Column(String, nullable=True)
+    zone_id = Column(String, nullable=True)
+    capabilities = Column(String)  # JSON encoded
