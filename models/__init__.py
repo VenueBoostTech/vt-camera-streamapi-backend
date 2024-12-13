@@ -9,7 +9,18 @@ from .environment import SmokeDetection
 from .security import ThreatDetection, SleepingDetection
 from .staff import Staff, WorkSession, Activity, Break
 from .vehicle import Vehicle, ParkingSpot, ValetRequest
-from .property import Property, Zone
+from .property import Property, Building, Floor
+from .zone import Zone
+from .behavior import Behavior
+from .pattern import Pattern
+from .spaceAnalytics import SpaceAnalytics
+from .heatmapData import HeatmapData
+from .demographics import Demographics
+from .securityEvent import SecurityEvent
+from .detection import Detection
+from .incident import Incident
+from .parkingEvent import ParkingEvent
+from .parkingAnalytics import ParkingAnalytics
 
 from sqlalchemy.ext.declarative import declarative_base
 # Make sure all models are imported here
@@ -33,7 +44,19 @@ __all__ = [
    "ParkingSpot",
    "ValetRequest",
    "Property",
-   "Zone"
+   "Zone",
+   "Behavior",
+   "Pattern",
+   "SpaceAnalytics",
+   "HeatmapData",
+   "Demographics",
+   "SecurityEvent",
+   "Detection",
+   "Incident",
+   "ParkingEvent",
+   "ParkingAnalytics",
+   "Floor",
+   "Building"
 ]
 
 Base = declarative_base()

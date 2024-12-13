@@ -1,14 +1,34 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime
+from sqlalchemy import Column, String, Integer, Boolean, DateTime, JSON, ForeignKey, Enum as SQLAlchemyEnum
+from sqlalchemy.orm import relationship
 from .base import Base
+from enum import Enum
+
+class CameraType(str, Enum):
+    INDOOR = "INDOOR"
+    OUTDOOR = "OUTDOOR"
+    THERMAL = "THERMAL"
+
+class CameraStatus(str, Enum):
+    ACTIVE = "ACTIVE"
+    INACTIVE = "INACTIVE"
+    MAINTENANCE = "MAINTENANCE"
 
 class Camera(Base):
     __tablename__ = "cameras"
 
     id = Column(Integer, primary_key=True, index=True)
-    camera_id = Column(String, unique=True, index=True)
-    rtsp_url = Column(String)
-    status = Column(Boolean, default=True)
-    last_active = Column(DateTime)
-    property_id = Column(String, nullable=True)
-    zone_id = Column(String, nullable=True)
-    capabilities = Column(String)  # JSON encoded
+    camera_id = Column(String, unique=True, index=True, nullable=False)
+    zone_id = Column(String, ForeignKey("zones.id"), nullable=False)  # Corrected ForeignKey reference
+    rtsp_url = Column(String, nullable=True)
+    status = Column(SQLAlchemyEnum(CameraStatus), nullable=False, default=CameraStatus.ACTIVE)
+    last_active = Column(DateTime, nullable=True)
+    property_id = Column(String, ForeignKey("properties.id"), nullable=True)
+    capabilities = Column(String)  # JSON-encoded
+    name = Column(String, nullable=False)
+    location = Column(String, nullable=True)
+    direction = Column(String, nullable=True)
+    coverage_area = Column(JSON, nullable=True)  # Field of view polygon as JSON
+
+    # Relationships
+    zone = relationship("Zone", back_populates="cameras")
+    detections = relationship("Detection", back_populates="camera")
