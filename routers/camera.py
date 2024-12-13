@@ -4,7 +4,8 @@ from typing import List
 from database import get_db
 from models import camera as camera_model
 from schemas import camera as camera_schema
-from models.property import Property, Zone
+from models.property import Property
+from models.zone import Zone
 
 router = APIRouter()
 

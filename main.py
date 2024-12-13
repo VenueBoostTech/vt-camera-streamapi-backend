@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import camera, entry_exit, analytics, vehicle_detection, smoking_detection, threat_detection, environment, security, staff, vehicle, activity,settings, dashboard, property
+from routers import camera,entry_exit,analytics,vehicle_detection,smoking_detection,threat_detection,environment,security,staff,vehicle,activity,dashboard,property,zone,behavior,pattern, spaceAnalytics, securityEvent, incident, parkingEvent, parkingAnalytics
 
 app = FastAPI(
     title="VisionTrackAPI"
@@ -27,6 +27,14 @@ app.include_router(dashboard.router, prefix="/optivenue/api/v1/dashboard", tags=
 app.include_router(environment.router, prefix="/optivenue/api/v1/environment", tags=["Environment"])
 app.include_router(security.router, prefix="/vt/api/v1/security", tags=["Security"])
 app.include_router(property.router, prefix="/vt/api/v1/property", tags=["Property"])
+app.include_router(zone.router, prefix="/vt/api/v1/zone", tags=["Zone"])
+app.include_router(behavior.router, prefix="/vt/api/v1/behavior", tags=["Behavior"])
+app.include_router(pattern.router, prefix="/vt/api/v1/pattern", tags=["Pattern"])
+app.include_router(spaceAnalytics.router, prefix="/vt/api/v1/spaceAnalytics", tags=["Space Analytics"])
+app.include_router(securityEvent.router, prefix="/vt/api/v1/securityEvent", tags=["Security Events"])
+app.include_router(incident.router, prefix="/vt/api/v1/incident", tags=["Incidents"])
+app.include_router(parkingEvent.router, prefix="/vt/api/v1/parkingEvent", tags=["Parking Events"])
+app.include_router(parkingAnalytics.router, prefix="/vt/api/v1/parkingAnalytics", tags=["Parking Analytics"])
 # app.include_router(settings_router, prefix="/settings", tags=["Settings"])
 app.include_router(staff.router, prefix="/optivenue/api/v1/staff", tags=["Staff"])
 app.include_router(vehicle.router, prefix="/optivenue/api/v1/vehicle", tags=["Vehicle"])

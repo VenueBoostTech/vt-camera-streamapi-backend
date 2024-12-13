@@ -38,9 +38,11 @@ class WorkSession(WorkSessionBase):
         orm_mode = True
 
 class ActivityBase(BaseModel):
-    work_session_id: int
+    property_id: Optional[str]
+    zone_id: Optional[str]
     type: str
     duration: float
+    confidence: float
 
 class ActivityCreate(ActivityBase):
     pass

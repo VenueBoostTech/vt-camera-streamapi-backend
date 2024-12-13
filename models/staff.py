@@ -28,9 +28,12 @@ class Activity(Base):
     __tablename__ = "activities"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    work_session_id = Column(Integer, ForeignKey("work_sessions.id"))
+    property_id = Column(String, ForeignKey("properties.id"))
+    zone_id = Column(String, ForeignKey("zones.id"))
+    work_session_id = Column(Integer, ForeignKey("work_sessions.id"), nullable=True)
     type = Column(String)
     duration = Column(Float)
+    confidence = Column(Float)
     
     work_session = relationship("WorkSession", back_populates="activities")
 

@@ -1,21 +1,33 @@
 from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional
+from uuid import UUID
+
 
 class VehicleBase(BaseModel):
+    property_id: UUID
+    plate_number: Optional[str] = None
     type: str
-    license_plate: str
+    status: str  # Example: "RESIDENT", "VISITOR", "DELIVERY", "UNAUTHORIZED"
+    first_seen: datetime
+    last_seen: datetime
+    visit_count: int
+
 
 class VehicleCreate(VehicleBase):
     pass
 
-class VehicleUpdate(VehicleBase):
-    pass
+
+class VehicleUpdate(BaseModel):
+    plate_number: Optional[str] = None
+    type: Optional[str] = None
+    status: Optional[str] = None
+    last_seen: Optional[datetime] = None
+    visit_count: Optional[int] = None
+
 
 class Vehicle(VehicleBase):
-    id: int
-    created_at: datetime
-    updated_at: datetime
+    id: UUID
 
     class Config:
         orm_mode = True
