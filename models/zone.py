@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, ForeignKey, Float, Enum as SQLAlchemyEnum
+from sqlalchemy import Column, String, Integer, ForeignKey, Float, Enum as SQLAlchemyEnum, Boolean
 from sqlalchemy.orm import relationship
 from .base import Base
 from enum import Enum
@@ -32,6 +32,7 @@ class Zone(Base):
 
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     property_id = Column(String, ForeignKey("properties.id"), nullable=False)
+    building_id = Column(String, ForeignKey("buildings.id"), nullable=False)
     floor_id = Column(String, ForeignKey("floors.id"), nullable=False)
     name = Column(String, index=True, nullable=False)
     type = Column(SQLAlchemyEnum(ZoneType), nullable=False)
@@ -57,3 +58,5 @@ class Zone(Base):
     security_events = relationship("SecurityEvent", back_populates="zone")
     parking_events = relationship("ParkingEvent", back_populates="zone")
     parking_analytics = relationship("ParkingAnalytics", back_populates="zone")
+    building = relationship("Building", back_populates="zones")  # Added building relationship
+

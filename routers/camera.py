@@ -27,16 +27,18 @@ def create_camera(
             raise HTTPException(status_code=400, detail="Invalid zone_id")
 
     # Create camera
-    db_camera = camera_model.Camera(**camera.model_dump())
+    db_camera = camera_model.Camera(**camera.dict())
     db.add(db_camera)
     db.commit()
     db.refresh(db_camera)
     return db_camera
 
+
 @router.get("/", response_model=List[camera_schema.Camera])
 def read_cameras(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     cameras = db.query(camera_model.Camera).offset(skip).limit(limit).all()
     return cameras
+
 
 @router.get("/{camera_id}", response_model=camera_schema.Camera)
 def read_camera(camera_id: str, db: Session = Depends(get_db)):
@@ -45,10 +47,11 @@ def read_camera(camera_id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Camera not found")
     return db_camera
 
+
 @router.put("/{camera_id}", response_model=camera_schema.Camera)
 def update_camera(
     camera_id: str,
-    camera: camera_schema.CameraCreate,
+    camera: camera_schema.CameraCreate,  # Use CameraUpdate schema for partial updates
     db: Session = Depends(get_db)
 ):
     # Retrieve the camera to update
@@ -69,9 +72,8 @@ def update_camera(
             raise HTTPException(status_code=400, detail="Invalid zone_id")
 
     # Update camera fields
-    for key, value in camera.dict().items():
-        if value is not None:  # Only update fields that are not None
-            setattr(db_camera, key, value)
+    for key, value in camera.dict(exclude_unset=True).items():  # Exclude unset fields
+        setattr(db_camera, key, value)
     
     db.commit()
     db.refresh(db_camera)

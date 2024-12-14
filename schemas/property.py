@@ -18,6 +18,14 @@ class BuildingCreate(BaseModel):
     type: BuildingType  # Enum: BuildingType (e.g., RESIDENTIAL, COMMERCIAL, MIXED)
     sub_address: Optional[str] = None  # Optional field for sub-address
     settings: Optional[dict] = Field(default_factory=dict)  # JSON-compatible settings
+    property_id: str
+
+class BuildingCreateNested(BaseModel):
+    name: str
+    type: BuildingType  
+    sub_address: Optional[str] = None  
+    settings: Optional[dict] = Field(default_factory=dict)
+
 # PropertyCreate model
 class PropertyCreate(BaseModel):
     name: str
@@ -26,7 +34,7 @@ class PropertyCreate(BaseModel):
     settings: Optional[dict] = Field(default_factory=dict)
     created_at: datetime
     updated_at: datetime
-    buildings: List[BuildingCreate] = Field(default_factory=list)
+    buildings: List[BuildingCreateNested] = Field(default_factory=list)
 
 # PropertyResponse model
 class PropertyResponse(BaseModel):
@@ -40,15 +48,6 @@ class PropertyResponse(BaseModel):
 
     class Config:
         orm_mode = True
-
-# BuildingCreate model
-class BuildingCreate(BaseModel):
-    property_id: UUID
-    name: str
-    type: BuildingType
-    sub_address: Optional[str] = None
-    settings: Optional[Dict[str, Any]] = Field(default_factory=dict)
-
 
 
 # BuildingResponse model
@@ -65,7 +64,7 @@ class BuildingResponse(BaseModel):
 
 # FloorCreate model
 class FloorCreate(BaseModel):
-    building_id: UUID
+    building_id: str
     floor_number: int
     layout: Optional[str] = None
 
