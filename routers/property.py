@@ -175,6 +175,26 @@ def update_building(
     db.refresh(db_building)
     return db_building
 
+@router.get("/buildings/", response_model=List[property_schema.BuildingResponse])
+def read_buildings(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    """
+    Retrieve a list of all buildings with pagination support.
+    """
+    buildings = db.query(property_model.Building).offset(skip).limit(limit).all()
+    
+    # Ensure settings is always a dict
+    for building in buildings:
+        if building.settings is None:
+            building.settings = {}
+        elif isinstance(building.settings, str):
+            try:
+                building.settings = json.loads(building.settings)
+            except json.JSONDecodeError:
+                building.settings = {}
+    
+    return buildings
+
+
 @router.delete("/buildings/{building_id}")
 def delete_building(building_id: str, db: Session = Depends(get_db)):
     db_building = db.query(property_model.Building).filter(property_model.Building.id == building_id).first()
@@ -196,6 +216,24 @@ def create_floor(floor: property_schema.FloorCreate, db: Session = Depends(get_d
     db.commit()
     db.refresh(db_floor)
     return db_floor
+
+@router.get("/floors/", response_model=List[property_schema.FloorResponse])
+def read_floors(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    """
+    Retrieve a list of all floors with pagination support.
+    """
+    floors = db.query(property_model.Floor).offset(skip).limit(limit).all()
+    
+    # Ensure settings is always a dict, if applicable
+    for floor in floors:
+        if hasattr(floor, "settings") and isinstance(floor.settings, str):
+            try:
+                floor.settings = json.loads(floor.settings)
+            except json.JSONDecodeError:
+                floor.settings = {}
+    
+    return floors
+
 
 @router.get("/floors/{floor_id}", response_model=property_schema.FloorResponse)
 def read_floor(floor_id: str, db: Session = Depends(get_db)):

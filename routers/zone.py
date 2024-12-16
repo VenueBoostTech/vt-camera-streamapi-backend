@@ -5,12 +5,12 @@ from uuid import UUID
 from database import get_db
 from models.zone import Zone
 from schemas.zone import ZoneCreate, ZoneResponse
+import json
 
 router = APIRouter()
 
 @router.post("/properties/{property_id}/zones", response_model=ZoneResponse)
 def create_zone(property_id: str, zone: ZoneCreate, db: Session = Depends(get_db)):
-    # Validate the property_id matches the incoming zone.property_id
     if zone.property_id != property_id:
         raise HTTPException(status_code=400, detail="Mismatched property_id")
 
@@ -21,7 +21,7 @@ def create_zone(property_id: str, zone: ZoneCreate, db: Session = Depends(get_db
         floor_id=zone.floor_id,
         name=zone.name,
         type=zone.type,
-        polygon=zone.polygon,
+        polygon=json.dumps(zone.polygon),
         rules=zone.rules,
         settings=zone.settings,
         active=zone.active,

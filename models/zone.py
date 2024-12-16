@@ -3,6 +3,7 @@ from sqlalchemy.orm import relationship
 from .base import Base
 from enum import Enum
 import uuid
+import json
 
 class ZoneType(str, Enum):
     ENTRANCE = "ENTRANCE"
@@ -60,3 +61,8 @@ class Zone(Base):
     parking_analytics = relationship("ParkingAnalytics", back_populates="zone")
     building = relationship("Building", back_populates="zones")  # Added building relationship
 
+    def set_polygon(self, polygon):
+            self.polygon = json.dumps(polygon) if polygon else None
+
+    def get_polygon(self):
+        return json.loads(self.polygon) if self.polygon else None

@@ -6,8 +6,67 @@ from models import camera as camera_model
 from schemas import camera as camera_schema
 from models.property import Property
 from models.zone import Zone
+import json
 
 router = APIRouter()
+
+
+@router.post("/", response_model=camera_schema.Camera)
+def create_camera(camera: camera_schema.CameraCreate, db: Session = Depends(get_db)):
+    """
+    Create a new camera with property and zone validation.
+    """
+    # Validate property_id if provided
+    if camera.property_id:
+        property_exists = db.query(Property).filter(Property.id == camera.property_id).first()
+        if not property_exists:
+            raise HTTPException(status_code=400, detail="Invalid property_id")
+
+    # Validate zone_id if provided
+    if camera.zone_id:
+        zone_exists = db.query(Zone).filter(Zone.id == camera.zone_id).first()
+        if not zone_exists:
+            raise HTTPException(status_code=400, detail="Invalid zone_id")
+
+    # Serialize capabilities field
+    db_camera = camera_model.Camera(
+        camera_id=camera.camera_id,
+        rtsp_url=camera.rtsp_url,
+        status=camera.status,
+        property_id=camera.property_id,
+        zone_id=camera.zone_id,
+        capabilities=json.dumps(camera.capabilities) if camera.capabilities else None,
+        name=camera.name,
+        location=camera.location,
+        direction=camera.direction,
+        coverage_area=camera.coverage_area,
+    )
+
+    try:
+    
+        db.add(db_camera)
+        db.commit()
+        db.refresh(db_camera)
+        db_camera.capabilities = json.loads(db_camera.capabilities) if db_camera.capabilities else []
+        return db_camera
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/camera/{camera_id}", response_model=camera_schema.Camera)
+def read_camera(camera_id: str, db: Session = Depends(get_db)):
+    """
+    Retrieve a camera by its ID.
+    """
+    db_camera = db.query(camera_model.Camera).filter(camera_model.Camera.camera_id == camera_id).first()
+    if not db_camera:
+        raise HTTPException(status_code=404, detail="Camera not found")
+
+    # Deserialize capabilities field
+    db_camera.capabilities = json.loads(db_camera.capabilities) if db_camera.capabilities else []
+    return db_camera
+
 
 @router.post("/", response_model=camera_schema.Camera)
 def create_camera(

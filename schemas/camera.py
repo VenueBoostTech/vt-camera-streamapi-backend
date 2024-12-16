@@ -9,7 +9,7 @@ class CameraBase(BaseModel):
     status: str = "ACTIVE"  # Default to "ACTIVE" as per the SQLAlchemy model
     property_id: Optional[str] = None
     zone_id: Optional[str] = None
-    capabilities: Optional[str] = None  # JSON encoded as a string
+    capabilities: Optional[List[str]] = None  # JSON encoded as a string
     name: str
     location: Optional[str] = None
     direction: Optional[str] = None
