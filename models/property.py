@@ -64,6 +64,8 @@ class Building(Base):
     # Relationships
     property = relationship("Property", back_populates="buildings")
     floors = relationship("Floor", back_populates="building")
+    zones = relationship("Zone", back_populates="building")
+
 
 class Floor(Base):
     __tablename__ = "floors"

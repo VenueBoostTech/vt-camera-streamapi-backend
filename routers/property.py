@@ -121,89 +121,145 @@ def delete_property(property_id: str, db: Session = Depends(get_db)):
     return {"message": "Property deleted successfully"}
 
 # Building routes
-# @router.post("/buildings/", response_model=property_schema.BuildingResponse)
-# def create_building(building: property_schema.BuildingCreate, db: Session = Depends(get_db)):
-#     # Verify property exists
-#     if not db.query(property_model.Property).filter(property_model.Property.id == building.property_id).first():
-#         raise HTTPException(status_code=404, detail="Property not found")
+@router.post("/buildings/", response_model=property_schema.BuildingResponse)
+def create_building(building: property_schema.BuildingCreate, db: Session = Depends(get_db)):
+    # Verify property exists first
+    property = db.query(property_model.Property).filter(property_model.Property.id == building.property_id).first()
+    if not property:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Property with ID {building.property_id} not found"
+        )
     
-#     db_building = property_model.Building(**building.model_dump())
-#     db.add(db_building)
-#     db.commit()
-#     db.refresh(db_building)
-#     return db_building
-
-# @router.get("/buildings/{building_id}", response_model=property_schema.ExtendedBuildingResponse)
-# def read_building(building_id: str, db: Session = Depends(get_db)):
-#     db_building = db.query(property_model.Building).filter(property_model.Building.id == building_id).first()
-#     if db_building is None:
-#         raise HTTPException(status_code=404, detail="Building not found")
-#     return db_building
-
-# @router.put("/buildings/{building_id}", response_model=property_schema.BuildingResponse)
-# def update_building(
-#     building_id: str,
-#     building_update: property_schema.BuildingCreate,
-#     db: Session = Depends(get_db)
-# ):
-#     db_building = db.query(property_model.Building).filter(property_model.Building.id == building_id).first()
-#     if db_building is None:
-#         raise HTTPException(status_code=404, detail="Building not found")
+    # Create building
+    db_building = property_model.Building(
+        property_id=building.property_id,
+        name=building.name,
+        type=building.type,
+        sub_address=building.sub_address,
+        settings=building.settings
+    )
     
-#     for key, value in building_update.model_dump().items():
-#         setattr(db_building, key, value)
+    db.add(db_building)
+    try:
+        db.commit()
+        db.refresh(db_building)
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+        
+    return db_building
+
+
+@router.get("/buildings/{building_id}", response_model=property_schema.ExtendedBuildingResponse)
+def read_building(building_id: str, db: Session = Depends(get_db)):
+    db_building = db.query(property_model.Building).filter(property_model.Building.id == building_id).first()
+    if db_building is None:
+        raise HTTPException(status_code=404, detail="Building not found")
+    return db_building
+
+@router.put("/buildings/{building_id}", response_model=property_schema.BuildingResponse)
+def update_building(
+    building_id: str,
+    building_update: property_schema.BuildingCreate,
+    db: Session = Depends(get_db)
+):
+    db_building = db.query(property_model.Building).filter(property_model.Building.id == building_id).first()
+    if db_building is None:
+        raise HTTPException(status_code=404, detail="Building not found")
     
-#     db.commit()
-#     db.refresh(db_building)
-#     return db_building
-
-# @router.delete("/buildings/{building_id}")
-# def delete_building(building_id: str, db: Session = Depends(get_db)):
-#     db_building = db.query(property_model.Building).filter(property_model.Building.id == building_id).first()
-#     if db_building is None:
-#         raise HTTPException(status_code=404, detail="Building not found")
-#     db.delete(db_building)
-#     db.commit()
-#     return {"message": "Building deleted successfully"}
-
-# # Floor routes
-# @router.post("/floors/", response_model=property_schema.FloorResponse)
-# def create_floor(floor: property_schema.FloorCreate, db: Session = Depends(get_db)):
-#     # Verify building exists
-#     if not db.query(property_model.Building).filter(property_model.Building.id == floor.building_id).first():
-#         raise HTTPException(status_code=404, detail="Building not found")
+    for key, value in building_update.model_dump().items():
+        setattr(db_building, key, value)
     
-#     db_floor = property_model.Floor(**floor.model_dump())
-#     db.add(db_floor)
-#     db.commit()
-#     db.refresh(db_floor)
-#     return db_floor
+    db.commit()
+    db.refresh(db_building)
+    return db_building
 
-# @router.get("/floors/{floor_id}", response_model=property_schema.FloorResponse)
-# def read_floor(floor_id: str, db: Session = Depends(get_db)):
-#     db_floor = db.query(property_model.Floor).filter(property_model.Floor.id == floor_id).first()
-#     if db_floor is None:
-#         raise HTTPException(status_code=404, detail="Floor not found")
-#     return db_floor
-
-# @router.put("/floors/{floor_id}", response_model=property_schema.FloorResponse)
-# def update_floor(floor_id: str, floor_update: property_schema.FloorCreate, db: Session = Depends(get_db)):
-#     db_floor = db.query(property_model.Floor).filter(property_model.Floor.id == floor_id).first()
-#     if db_floor is None:
-#         raise HTTPException(status_code=404, detail="Floor not found")
+@router.get("/buildings/", response_model=List[property_schema.BuildingResponse])
+def read_buildings(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    """
+    Retrieve a list of all buildings with pagination support.
+    """
+    buildings = db.query(property_model.Building).offset(skip).limit(limit).all()
     
-#     for key, value in floor_update.model_dump().items():
-#         setattr(db_floor, key, value)
+    # Ensure settings is always a dict
+    for building in buildings:
+        if building.settings is None:
+            building.settings = {}
+        elif isinstance(building.settings, str):
+            try:
+                building.settings = json.loads(building.settings)
+            except json.JSONDecodeError:
+                building.settings = {}
     
-#     db.commit()
-#     db.refresh(db_floor)
-#     return db_floor
+    return buildings
 
-# @router.delete("/floors/{floor_id}")
-# def delete_floor(floor_id: str, db: Session = Depends(get_db)):
-#     db_floor = db.query(property_model.Floor).filter(property_model.Floor.id == floor_id).first()
-#     if db_floor is None:
-#         raise HTTPException(status_code=404, detail="Floor not found")
-#     db.delete(db_floor)
-#     db.commit()
-#     return {"message": "Floor deleted successfully"}
+
+@router.delete("/buildings/{building_id}")
+def delete_building(building_id: str, db: Session = Depends(get_db)):
+    db_building = db.query(property_model.Building).filter(property_model.Building.id == building_id).first()
+    if db_building is None:
+        raise HTTPException(status_code=404, detail="Building not found")
+    db.delete(db_building)
+    db.commit()
+    return {"message": "Building deleted successfully"}
+
+# Floor routes
+@router.post("/floors/", response_model=property_schema.FloorResponse)
+def create_floor(floor: property_schema.FloorCreate, db: Session = Depends(get_db)):
+    # Verify building exists
+    if not db.query(property_model.Building).filter(property_model.Building.id == floor.building_id).first():
+        raise HTTPException(status_code=404, detail="Building not found")
+    
+    db_floor = property_model.Floor(**floor.model_dump())
+    db.add(db_floor)
+    db.commit()
+    db.refresh(db_floor)
+    return db_floor
+
+@router.get("/floors/", response_model=List[property_schema.FloorResponse])
+def read_floors(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    """
+    Retrieve a list of all floors with pagination support.
+    """
+    floors = db.query(property_model.Floor).offset(skip).limit(limit).all()
+    
+    # Ensure settings is always a dict, if applicable
+    for floor in floors:
+        if hasattr(floor, "settings") and isinstance(floor.settings, str):
+            try:
+                floor.settings = json.loads(floor.settings)
+            except json.JSONDecodeError:
+                floor.settings = {}
+    
+    return floors
+
+
+@router.get("/floors/{floor_id}", response_model=property_schema.FloorResponse)
+def read_floor(floor_id: str, db: Session = Depends(get_db)):
+    db_floor = db.query(property_model.Floor).filter(property_model.Floor.id == floor_id).first()
+    if db_floor is None:
+        raise HTTPException(status_code=404, detail="Floor not found")
+    return db_floor
+
+@router.put("/floors/{floor_id}", response_model=property_schema.FloorResponse)
+def update_floor(floor_id: str, floor_update: property_schema.FloorCreate, db: Session = Depends(get_db)):
+    db_floor = db.query(property_model.Floor).filter(property_model.Floor.id == floor_id).first()
+    if db_floor is None:
+        raise HTTPException(status_code=404, detail="Floor not found")
+    
+    for key, value in floor_update.model_dump().items():
+        setattr(db_floor, key, value)
+    
+    db.commit()
+    db.refresh(db_floor)
+    return db_floor
+
+@router.delete("/floors/{floor_id}")
+def delete_floor(floor_id: str, db: Session = Depends(get_db)):
+    db_floor = db.query(property_model.Floor).filter(property_model.Floor.id == floor_id).first()
+    if db_floor is None:
+        raise HTTPException(status_code=404, detail="Floor not found")
+    db.delete(db_floor)
+    db.commit()
+    return {"message": "Floor deleted successfully"}

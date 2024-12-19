@@ -2,6 +2,7 @@ from sqlalchemy import Column, String, Integer, Boolean, DateTime, JSON, Foreign
 from sqlalchemy.orm import relationship
 from .base import Base
 from enum import Enum
+import uuid
 
 class CameraType(str, Enum):
     INDOOR = "INDOOR"
@@ -16,9 +17,9 @@ class CameraStatus(str, Enum):
 class Camera(Base):
     __tablename__ = "cameras"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     camera_id = Column(String, unique=True, index=True, nullable=False)
-    zone_id = Column(String, ForeignKey("zones.id"), nullable=False)  # Corrected ForeignKey reference
+    zone_id = Column(String, ForeignKey("zones.id"), nullable=True)  # Corrected ForeignKey reference
     rtsp_url = Column(String, nullable=True)
     status = Column(SQLAlchemyEnum(CameraStatus), nullable=False, default=CameraStatus.ACTIVE)
     last_active = Column(DateTime, nullable=True)

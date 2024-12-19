@@ -1,8 +1,8 @@
-"""Add Property 4
+"""update zone for buiding id
 
-Revision ID: 7087bbebfaac
+Revision ID: f6a4a990f754
 Revises: 
-Create Date: 2024-12-13 21:38:37.955157
+Create Date: 2024-12-14 17:13:33.965963
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '7087bbebfaac'
+revision: str = 'f6a4a990f754'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -141,7 +141,7 @@ def upgrade() -> None:
     sa.Column('type', sa.Enum('RESIDENTIAL', 'COMMERCIAL', 'MIXED', name='buildingtype'), nullable=False),
     sa.Column('sub_address', sa.String(), nullable=True),
     sa.Column('settings', sa.JSON(), nullable=True),
-    sa.ForeignKeyConstraint(['property_id'], ['properties.id'], ),
+    sa.ForeignKeyConstraint(['property_id'], ['properties.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('incidents',
@@ -217,6 +217,7 @@ def upgrade() -> None:
     op.create_table('zones',
     sa.Column('id', sa.String(), nullable=False),
     sa.Column('property_id', sa.String(), nullable=False),
+    sa.Column('building_id', sa.String(), nullable=False),
     sa.Column('floor_id', sa.String(), nullable=False),
     sa.Column('name', sa.String(), nullable=False),
     sa.Column('type', sa.Enum('ENTRANCE', 'LOBBY', 'HALLWAY', 'STAIRWELL', 'GARAGE', 'OFFICE_ROOM', 'MEETING_ROOM', 'APARTMENT', 'RETAIL_SPACE', 'STORAGE_ROOM', 'BATHROOM', 'KITCHEN', 'GYM', 'LAUNDRY', 'RESTRICTED', 'UTILITY', 'SERVER_ROOM', 'OUTDOOR', 'PARKING_LOT', 'GARDEN', 'ROOFTOP', name='zonetype'), nullable=False),
@@ -227,6 +228,7 @@ def upgrade() -> None:
     sa.Column('access_level', sa.String(), nullable=True),
     sa.Column('capacity', sa.Integer(), nullable=True),
     sa.Column('square_footage', sa.Float(), nullable=True),
+    sa.ForeignKeyConstraint(['building_id'], ['buildings.id'], ),
     sa.ForeignKeyConstraint(['floor_id'], ['floors.id'], ),
     sa.ForeignKeyConstraint(['property_id'], ['properties.id'], ),
     sa.PrimaryKeyConstraint('id')
@@ -259,9 +261,9 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('cameras',
-    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('id', sa.String(), nullable=False),
     sa.Column('camera_id', sa.String(), nullable=False),
-    sa.Column('zone_id', sa.String(), nullable=False),
+    sa.Column('zone_id', sa.String(), nullable=True),
     sa.Column('rtsp_url', sa.String(), nullable=True),
     sa.Column('status', sa.Enum('ACTIVE', 'INACTIVE', 'MAINTENANCE', name='camerastatus'), nullable=False),
     sa.Column('last_active', sa.DateTime(), nullable=True),
@@ -276,7 +278,6 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_cameras_camera_id'), 'cameras', ['camera_id'], unique=True)
-    op.create_index(op.f('ix_cameras_id'), 'cameras', ['id'], unique=False)
     op.create_table('demographics',
     sa.Column('id', sa.String(), nullable=False),
     sa.Column('zone_id', sa.String(), nullable=False),
@@ -392,7 +393,6 @@ def downgrade() -> None:
     op.drop_table('parking_analytics')
     op.drop_table('heatmap_data')
     op.drop_table('demographics')
-    op.drop_index(op.f('ix_cameras_id'), table_name='cameras')
     op.drop_index(op.f('ix_cameras_camera_id'), table_name='cameras')
     op.drop_table('cameras')
     op.drop_table('behaviors')
