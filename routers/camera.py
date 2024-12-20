@@ -64,7 +64,9 @@ def read_camera(camera_id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Camera not found")
 
     # Deserialize capabilities field
-    db_camera.capabilities = json.loads(db_camera.capabilities) if db_camera.capabilities else []
+    db_camera.capabilities = (
+        json.loads(db_camera.capabilities) if db_camera.capabilities else []
+    )
     return db_camera
 
 
@@ -96,6 +98,10 @@ def create_camera(
 @router.get("/", response_model=List[camera_schema.Camera])
 def read_cameras(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     cameras = db.query(camera_model.Camera).offset(skip).limit(limit).all()
+    for camera in cameras:
+        camera.capabilities = (
+            json.loads(camera.capabilities) if camera.capabilities else []
+        )
     return cameras
 
 
