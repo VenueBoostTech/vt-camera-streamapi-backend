@@ -7,26 +7,36 @@ from schemas import camera as camera_schema
 from models.property import Property
 from models.zone import Zone
 import json
+from models.business import Business
+from utils.auth_middleware import verify_business_auth
 
 router = APIRouter()
 
 
 @router.post("/", response_model=camera_schema.Camera)
-def create_camera(camera: camera_schema.CameraCreate, db: Session = Depends(get_db)):
+def create_camera(
+    camera: camera_schema.CameraCreate,
+    db: Session = Depends(get_db),
+    business: Business = Depends(verify_business_auth)  # Authentication middleware
+):
     """
-    Create a new camera with property and zone validation.
+    Create a new camera with property and zone validation and business ownership check.
     """
     # Validate property_id if provided
     if camera.property_id:
-        property_exists = db.query(Property).filter(Property.id == camera.property_id).first()
+        property_exists = db.query(Property).filter(
+            Property.id == camera.property_id, Property.business_id == business.id
+        ).first()
         if not property_exists:
-            raise HTTPException(status_code=400, detail="Invalid property_id")
+            raise HTTPException(status_code=400, detail="Invalid or unauthorized property_id")
 
     # Validate zone_id if provided
     if camera.zone_id:
-        zone_exists = db.query(Zone).filter(Zone.id == camera.zone_id).first()
+        zone_exists = db.query(Zone).filter(
+            Zone.id == camera.zone_id, Zone.business_id == business.id
+        ).first()
         if not zone_exists:
-            raise HTTPException(status_code=400, detail="Invalid zone_id")
+            raise HTTPException(status_code=400, detail="Invalid or unauthorized zone_id")
 
     # Serialize capabilities field
     db_camera = camera_model.Camera(
@@ -43,7 +53,6 @@ def create_camera(camera: camera_schema.CameraCreate, db: Session = Depends(get_
     )
 
     try:
-    
         db.add(db_camera)
         db.commit()
         db.refresh(db_camera)
@@ -54,44 +63,35 @@ def create_camera(camera: camera_schema.CameraCreate, db: Session = Depends(get_
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/camera/{camera_id}", response_model=camera_schema.Camera)
-def read_camera(camera_id: str, db: Session = Depends(get_db)):
-    """
-    Retrieve a camera by its ID.
-    """
+
+@router.get("/{camera_id}", response_model=camera_schema.Camera)
+def read_camera(
+    camera_id: str,
+    db: Session = Depends(get_db),
+    business: Business = Depends(verify_business_auth)  # Authentication middleware
+):
+
     db_camera = db.query(camera_model.Camera).filter(camera_model.Camera.camera_id == camera_id).first()
     if not db_camera:
         raise HTTPException(status_code=404, detail="Camera not found")
 
-    # Deserialize capabilities field
-    db_camera.capabilities = (
-        json.loads(db_camera.capabilities) if db_camera.capabilities else []
-    )
-    return db_camera
-
-
-@router.post("/", response_model=camera_schema.Camera)
-def create_camera(
-    camera: camera_schema.CameraCreate, 
-    db: Session = Depends(get_db)
-):
-    # Validate property_id if provided
-    if camera.property_id:
-        property_exists = db.query(Property).filter(Property.id == camera.property_id).first()
+    # Ensure the camera belongs to a property or zone owned by the authenticated business
+    if db_camera.property_id:
+        property_exists = db.query(Property).filter(
+            Property.id == db_camera.property_id, Property.business_id == business.id
+        ).first()
         if not property_exists:
-            raise HTTPException(status_code=400, detail="Invalid property_id")
+            raise HTTPException(status_code=403, detail="Access denied to this camera")
 
-    # Validate zone_id if provided
-    if camera.zone_id:
-        zone_exists = db.query(Zone).filter(Zone.id == camera.zone_id).first()
+    if db_camera.zone_id:
+        zone_exists = db.query(Zone).filter(
+            Zone.id == db_camera.zone_id, Zone.business_id == business.id
+        ).first()
         if not zone_exists:
-            raise HTTPException(status_code=400, detail="Invalid zone_id")
+            raise HTTPException(status_code=403, detail="Access denied to this camera")
 
-    # Create camera
-    db_camera = camera_model.Camera(**camera.dict())
-    db.add(db_camera)
-    db.commit()
-    db.refresh(db_camera)
+    # Deserialize capabilities field
+    db_camera.capabilities = json.loads(db_camera.capabilities) if db_camera.capabilities else []
     return db_camera
 
 

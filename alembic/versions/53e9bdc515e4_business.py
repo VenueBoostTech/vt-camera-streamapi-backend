@@ -1,8 +1,8 @@
-"""update zone for buiding id
+"""Business
 
-Revision ID: f6a4a990f754
+Revision ID: 53e9bdc515e4
 Revises: 
-Create Date: 2024-12-14 17:13:33.965963
+Create Date: 2024-12-31 19:01:08.347651
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'f6a4a990f754'
+revision: str = '53e9bdc515e4'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -140,7 +140,7 @@ def upgrade() -> None:
     sa.Column('name', sa.String(), nullable=False),
     sa.Column('type', sa.Enum('RESIDENTIAL', 'COMMERCIAL', 'MIXED', name='buildingtype'), nullable=False),
     sa.Column('sub_address', sa.String(), nullable=True),
-    sa.Column('settings', sa.JSON(), nullable=True),
+    sa.Column('settings', sa.JSON, nullable=True),
     sa.ForeignKeyConstraint(['property_id'], ['properties.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )

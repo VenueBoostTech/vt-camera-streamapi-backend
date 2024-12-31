@@ -21,6 +21,7 @@ from .detection import Detection
 from .incident import Incident
 from .parkingEvent import ParkingEvent
 from .parkingAnalytics import ParkingAnalytics
+from .business import Business
 
 from sqlalchemy.ext.declarative import declarative_base
 # Make sure all models are imported here
@@ -56,7 +57,8 @@ __all__ = [
    "ParkingEvent",
    "ParkingAnalytics",
    "Floor",
-   "Building"
+   "Building",
+   "Business"
 ]
 
 Base = declarative_base()
