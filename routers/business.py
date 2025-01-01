@@ -61,3 +61,14 @@ def read_business(
     if not business:
         raise HTTPException(status_code=404, detail="Business not found")
     return business
+
+@router.get("/by-vt-platform-id/{vt_platform_id}", response_model=dict)
+def get_business_id_by_vt_platform_id(
+    vt_platform_id: str,
+    db: Session = Depends(get_db)
+):
+
+    business = db.query(BusinessModel).filter(BusinessModel.vt_platform_id == vt_platform_id).first()
+    if not business:
+        raise HTTPException(status_code=404, detail="Business with this vt_platform_id not found")
+    return {"business_id": business.id}

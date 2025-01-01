@@ -3,6 +3,8 @@ from sqlalchemy.ext.declarative import declarative_base
 import uuid
 from datetime import datetime, timezone
 from .base import Base
+from sqlalchemy.orm import relationship
+
 
 class Business(Base):
     __tablename__ = "businesses"
@@ -14,3 +16,5 @@ class Business(Base):
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.now(timezone.utc))
     updated_at = Column(DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
+
+    cameras = relationship("Camera", back_populates="business")

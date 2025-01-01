@@ -33,3 +33,5 @@ class Camera(Base):
     # Relationships
     zone = relationship("Zone", back_populates="cameras")
     detections = relationship("Detection", back_populates="camera")
+    business_id = Column(String, ForeignKey("businesses.id"), nullable=False)
+    business = relationship("Business", back_populates="cameras")
