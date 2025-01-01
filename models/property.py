@@ -34,6 +34,7 @@ class Property(Base):
     __tablename__ = "properties"
 
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    business_id = Column(String, ForeignKey("businesses.id", ondelete="CASCADE"), nullable=False)
     name = Column(String, index=True)
     type = Column(SQLAlchemyEnum(PropertyType))
     address = Column(String)
@@ -49,12 +50,15 @@ class Property(Base):
 
     security_events = relationship("SecurityEvent", back_populates="property")
     incidents = relationship("Incident", back_populates="property")
+    business = relationship("Business", back_populates="properties")
+    
 
 class Building(Base):
     __tablename__ = "buildings"
 
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     property_id = Column(String, ForeignKey("properties.id", ondelete="CASCADE"), nullable=False)
+    business_id = Column(String, ForeignKey("businesses.id", ondelete="CASCADE"), nullable=False)
     name = Column(String, nullable=False)
     type = Column(SQLAlchemyEnum(BuildingType), nullable=False)
     sub_address = Column(String, nullable=True)
@@ -65,7 +69,7 @@ class Building(Base):
     property = relationship("Property", back_populates="buildings")
     floors = relationship("Floor", back_populates="building")
     zones = relationship("Zone", back_populates="building")
-
+    business = relationship("Business", back_populates="buildings")
 
 class Floor(Base):
     __tablename__ = "floors"

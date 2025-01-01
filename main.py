@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import camera,entry_exit,analytics,vehicle_detection,smoking_detection,threat_detection,environment,security,staff,vehicle,activity,dashboard,property,zone,behavior,pattern, spaceAnalytics, securityEvent, incident, parkingEvent, parkingAnalytics, business
+from routers import camera,entry_exit,analytics,vehicle_detection,smoking_detection,threat_detection,environment,security,staff,vehicle,activity,dashboard,property,zone,behavior,pattern, spaceAnalytics, securityEvent, incident, parkingEvent, parkingAnalytics, business, business_super_admin
 
 app = FastAPI(
     title="VisionTrackAPI"
@@ -39,6 +39,7 @@ app.include_router(parkingAnalytics.router, prefix="/vt/api/v1/parkingAnalytics"
 app.include_router(staff.router, prefix="/optivenue/api/v1/staff", tags=["Staff"])
 app.include_router(vehicle.router, prefix="/optivenue/api/v1/vehicle", tags=["Vehicle"])
 app.include_router(business.router, prefix="/api/businesses", tags=["Businesses"])
+app.include_router(business_super_admin.router, prefix="/api/superadmin/businesses", tags=["Super Admin"])
 
 
 @app.get("/")

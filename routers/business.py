@@ -36,17 +36,17 @@ def create_business(
 
     return new_business
 
-@router.get("/", response_model=List[BusinessSchema])
-def read_businesses(
-    skip: int = 0,
-    limit: int = 100,
-    db: Session = Depends(get_db)
-):
-    """
-    Retrieve all businesses with pagination.
-    """
-    businesses = db.query(BusinessModel).offset(skip).limit(limit).all()
-    return businesses
+# @router.get("/", response_model=List[BusinessSchema])
+# def read_businesses(
+#     skip: int = 0,
+#     limit: int = 100,
+#     db: Session = Depends(get_db)
+# ):
+#     """
+#     Retrieve all businesses with pagination.
+#     """
+#     businesses = db.query(BusinessModel).offset(skip).limit(limit).all()
+#     return businesses
 
 
 @router.get("/{business_id}", response_model=BusinessSchema)

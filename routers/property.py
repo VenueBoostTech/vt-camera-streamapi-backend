@@ -7,19 +7,26 @@ from schemas import property as property_schema
 from uuid import UUID
 import json
 from datetime import datetime
+from utils.auth_middleware import verify_business_auth
+from models.business import Business
 
 router = APIRouter()
 
 @router.post("/properties/", response_model=property_schema.ExtendedPropertyResponse)
-def create_property(property: property_schema.PropertyCreate, db: Session = Depends(get_db)):
-    # Create property
+def create_property(
+    property: property_schema.PropertyCreate,
+    db: Session = Depends(get_db),
+    business: Business = Depends(verify_business_auth),  # Middleware for business validation
+):
+    # Create property linked to the business
     db_property = property_model.Property(
         name=property.name,
         type=property.type,
         address=property.address,
         settings=property.settings,
         created_at=property.created_at,
-        updated_at=property.updated_at
+        updated_at=property.updated_at,
+        business_id=business.id,  # Link property to the authenticated business
     )
     db.add(db_property)
     db.flush()  # Flush to get the property ID
@@ -31,7 +38,7 @@ def create_property(property: property_schema.PropertyCreate, db: Session = Depe
             name=building_data.name,
             type=building_data.type,
             sub_address=building_data.sub_address,
-            settings=building_data.settings
+            settings=building_data.settings,
         )
         db.add(db_building)
 
@@ -40,42 +47,53 @@ def create_property(property: property_schema.PropertyCreate, db: Session = Depe
     return db_property
 
 @router.get("/properties/", response_model=List[property_schema.PropertyResponse])
-def read_properties(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    properties = db.query(property_model.Property).offset(skip).limit(limit).all()
-    
-    # Ensure settings is always a dict
-    for prop in properties:
-        if prop.settings is None:
-            prop.settings = {}
-        elif isinstance(prop.settings, str):
-            try:
-                prop.settings = json.loads(prop.settings)
-            except json.JSONDecodeError:
-                prop.settings = {}
-    
+def read_properties(
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db),
+    business: Business = Depends(verify_business_auth),  # Middleware for business validation
+):
+    properties = db.query(property_model.Property).filter(
+        property_model.Property.business_id == business.id  # Ensure properties belong to the business
+    ).offset(skip).limit(limit).all()
+
     return properties
 
 @router.get("/properties/{property_id}", response_model=property_schema.ExtendedPropertyResponse)
-def read_property(property_id: str, db: Session = Depends(get_db)):
-    db_property = db.query(property_model.Property).filter(property_model.Property.id == property_id).first()
+def read_property(
+    property_id: str,
+    db: Session = Depends(get_db),
+    business: Business = Depends(verify_business_auth),  # Middleware for business validation
+):
+    db_property = db.query(property_model.Property).filter(
+        property_model.Property.id == property_id,
+        property_model.Property.business_id == business.id,  # Ensure the property belongs to the business
+    ).first()
+
     if db_property is None:
         raise HTTPException(status_code=404, detail="Property not found")
+
     return db_property
 
 @router.put("/properties/{property_id}", response_model=property_schema.ExtendedPropertyResponse)
 def update_property(
     property_id: str,
     property_update: property_schema.PropertyCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    business: Business = Depends(verify_business_auth),  # Middleware for business validation
 ):
-    db_property = db.query(property_model.Property).filter(property_model.Property.id == property_id).first()
+    db_property = db.query(property_model.Property).filter(
+        property_model.Property.id == property_id,
+        property_model.Property.business_id == business.id,  # Ensure the property belongs to the business
+    ).first()
+
     if db_property is None:
         raise HTTPException(status_code=404, detail="Property not found")
 
     # Update property fields
-    for key, value in property_update.model_dump(exclude={'buildings'}).items():
+    for key, value in property_update.model_dump(exclude={"buildings"}).items():
         setattr(db_property, key, value)
-    
+
     # Update buildings
     if property_update.buildings:
         # Remove existing buildings not in the update
@@ -83,17 +101,16 @@ def update_property(
         for building in db_property.buildings:
             if building.name not in existing_building_names:
                 db.delete(building)
-        
+
         # Update or create buildings
         for building_data in property_update.buildings:
             db_building = next(
-                (b for b in db_property.buildings if b.name == building_data.name),
-                None
+                (b for b in db_property.buildings if b.name == building_data.name), None
             )
             if db_building:
                 # Update existing building
                 for key, value in building_data.model_dump().items():
-                    if key != 'property_id':
+                    if key != "property_id":
                         setattr(db_building, key, value)
             else:
                 # Create new building
@@ -102,7 +119,7 @@ def update_property(
                     name=building_data.name,
                     type=building_data.type,
                     sub_address=building_data.sub_address,
-                    settings=building_data.settings
+                    settings=building_data.settings,
                 )
                 db.add(db_building)
 
@@ -112,34 +129,52 @@ def update_property(
     return db_property
 
 @router.delete("/properties/{property_id}")
-def delete_property(property_id: str, db: Session = Depends(get_db)):
-    db_property = db.query(property_model.Property).filter(property_model.Property.id == property_id).first()
+def delete_property(
+    property_id: str,
+    db: Session = Depends(get_db),
+    business: Business = Depends(verify_business_auth),  # Middleware for business validation
+):
+    db_property = db.query(property_model.Property).filter(
+        property_model.Property.id == property_id,
+        property_model.Property.business_id == business.id,  # Ensure the property belongs to the business
+    ).first()
+
     if db_property is None:
         raise HTTPException(status_code=404, detail="Property not found")
+
     db.delete(db_property)
     db.commit()
     return {"message": "Property deleted successfully"}
 
+
 # Building routes
 @router.post("/buildings/", response_model=property_schema.BuildingResponse)
-def create_building(building: property_schema.BuildingCreate, db: Session = Depends(get_db)):
-    # Verify property exists first
-    property = db.query(property_model.Property).filter(property_model.Property.id == building.property_id).first()
-    if not property:
+def create_building(
+    building: property_schema.BuildingCreate,
+    db: Session = Depends(get_db),
+    business: Business = Depends(verify_business_auth),  # Middleware for business validation
+):
+    # Verify property exists and belongs to the business
+    db_property = db.query(property_model.Property).filter(
+        property_model.Property.id == building.property_id,
+        property_model.Property.business_id == business.id,  # Ensure property belongs to the business
+    ).first()
+    if not db_property:
         raise HTTPException(
             status_code=404,
-            detail=f"Property with ID {building.property_id} not found"
+            detail=f"Property with ID {building.property_id} not found or unauthorized",
         )
-    
+
     # Create building
     db_building = property_model.Building(
         property_id=building.property_id,
         name=building.name,
         type=building.type,
         sub_address=building.sub_address,
-        settings=building.settings
+        settings=building.settings,
+        business_id=business.id,  # Link building to the authenticated business
     )
-    
+
     db.add(db_building)
     try:
         db.commit()
@@ -147,41 +182,63 @@ def create_building(building: property_schema.BuildingCreate, db: Session = Depe
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
-        
+
     return db_building
 
 
 @router.get("/buildings/{building_id}", response_model=property_schema.ExtendedBuildingResponse)
-def read_building(building_id: str, db: Session = Depends(get_db)):
-    db_building = db.query(property_model.Building).filter(property_model.Building.id == building_id).first()
+def read_building(
+    building_id: str,
+    db: Session = Depends(get_db),
+    business: Business = Depends(verify_business_auth),  # Middleware for business validation
+):
+    # Fetch building and validate ownership
+    db_building = db.query(property_model.Building).filter(
+        property_model.Building.id == building_id,
+        property_model.Building.business_id == business.id,  # Ensure building belongs to the business
+    ).first()
     if db_building is None:
-        raise HTTPException(status_code=404, detail="Building not found")
+        raise HTTPException(status_code=404, detail="Building not found or unauthorized")
+
     return db_building
+
 
 @router.put("/buildings/{building_id}", response_model=property_schema.BuildingResponse)
 def update_building(
     building_id: str,
     building_update: property_schema.BuildingCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    business: Business = Depends(verify_business_auth),  # Middleware for business validation
 ):
-    db_building = db.query(property_model.Building).filter(property_model.Building.id == building_id).first()
+    # Fetch building and validate ownership
+    db_building = db.query(property_model.Building).filter(
+        property_model.Building.id == building_id,
+        property_model.Building.business_id == business.id,  # Ensure building belongs to the business
+    ).first()
     if db_building is None:
-        raise HTTPException(status_code=404, detail="Building not found")
-    
+        raise HTTPException(status_code=404, detail="Building not found or unauthorized")
+
+    # Update fields
     for key, value in building_update.model_dump().items():
         setattr(db_building, key, value)
-    
+
     db.commit()
     db.refresh(db_building)
     return db_building
 
+
 @router.get("/buildings/", response_model=List[property_schema.BuildingResponse])
-def read_buildings(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    """
-    Retrieve a list of all buildings with pagination support.
-    """
-    buildings = db.query(property_model.Building).offset(skip).limit(limit).all()
-    
+def read_buildings(
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db),
+    business: Business = Depends(verify_business_auth),  # Middleware for business validation
+):
+    # Fetch buildings associated with the business
+    buildings = db.query(property_model.Building).filter(
+        property_model.Building.business_id == business.id  # Ensure buildings belong to the business
+    ).offset(skip).limit(limit).all()
+
     # Ensure settings is always a dict
     for building in buildings:
         if building.settings is None:
@@ -191,15 +248,24 @@ def read_buildings(skip: int = 0, limit: int = 100, db: Session = Depends(get_db
                 building.settings = json.loads(building.settings)
             except json.JSONDecodeError:
                 building.settings = {}
-    
+
     return buildings
 
 
 @router.delete("/buildings/{building_id}")
-def delete_building(building_id: str, db: Session = Depends(get_db)):
-    db_building = db.query(property_model.Building).filter(property_model.Building.id == building_id).first()
+def delete_building(
+    building_id: str,
+    db: Session = Depends(get_db),
+    business: Business = Depends(verify_business_auth),  # Middleware for business validation
+):
+    # Fetch building and validate ownership
+    db_building = db.query(property_model.Building).filter(
+        property_model.Building.id == building_id,
+        property_model.Building.business_id == business.id,  # Ensure building belongs to the business
+    ).first()
     if db_building is None:
-        raise HTTPException(status_code=404, detail="Building not found")
+        raise HTTPException(status_code=404, detail="Building not found or unauthorized")
+
     db.delete(db_building)
     db.commit()
     return {"message": "Building deleted successfully"}

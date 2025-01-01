@@ -18,3 +18,6 @@ class Business(Base):
     updated_at = Column(DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
 
     cameras = relationship("Camera", back_populates="business")
+    zones = relationship("Zone", back_populates="business")
+    properties = relationship("Property", back_populates="business", cascade="all, delete-orphan")
+    buildings = relationship("Building", back_populates="business", cascade="all, delete-orphan")

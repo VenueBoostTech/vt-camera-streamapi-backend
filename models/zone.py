@@ -44,6 +44,7 @@ class Zone(Base):
     access_level = Column(String, nullable=True)
     capacity = Column(Integer, nullable=True)
     square_footage = Column(Float, nullable=True)
+    business_id = Column(String, ForeignKey("businesses.id"), nullable=False)
 
     # Relationships
     property = relationship("Property", back_populates="zones")
@@ -60,6 +61,8 @@ class Zone(Base):
     parking_events = relationship("ParkingEvent", back_populates="zone")
     parking_analytics = relationship("ParkingAnalytics", back_populates="zone")
     building = relationship("Building", back_populates="zones")  # Added building relationship
+
+    business = relationship("Business", back_populates="zones")
 
     def set_polygon(self, polygon):
             self.polygon = json.dumps(polygon) if polygon else None
