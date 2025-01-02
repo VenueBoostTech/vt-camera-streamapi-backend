@@ -36,17 +36,17 @@ def create_business(
 
     return new_business
 
-@router.get("/", response_model=List[BusinessSchema])
-def read_businesses(
-    skip: int = 0,
-    limit: int = 100,
-    db: Session = Depends(get_db)
-):
-    """
-    Retrieve all businesses with pagination.
-    """
-    businesses = db.query(BusinessModel).offset(skip).limit(limit).all()
-    return businesses
+# @router.get("/", response_model=List[BusinessSchema])
+# def read_businesses(
+#     skip: int = 0,
+#     limit: int = 100,
+#     db: Session = Depends(get_db)
+# ):
+#     """
+#     Retrieve all businesses with pagination.
+#     """
+#     businesses = db.query(BusinessModel).offset(skip).limit(limit).all()
+#     return businesses
 
 
 @router.get("/{business_id}", response_model=BusinessSchema)
@@ -72,3 +72,27 @@ def get_business_id_by_vt_platform_id(
     if not business:
         raise HTTPException(status_code=404, detail="Business with this vt_platform_id not found")
     return {"business_id": business.id}
+
+@router.put("/{business_id}", response_model=BusinessSchema)
+def update_business(
+    business_id: str,
+    business_update: BusinessSchema,
+    db: Session = Depends(get_db)
+):
+    """
+    Update an existing business.
+    """
+    business = db.query(BusinessModel).filter(BusinessModel.id == business_id).first()
+    if not business:
+        raise HTTPException(status_code=404, detail="Business not found")
+
+    # Update fields
+    business.name = business_update.name
+    business.vt_platform_id = business_update.vt_platform_id
+    business.api_key = business_update.api_key
+    business.is_active = business_update.is_active
+
+    db.commit()
+    db.refresh(business)
+
+    return business
