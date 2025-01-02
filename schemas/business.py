@@ -16,3 +16,14 @@ class BusinessSchema(BaseModel):
 
     class Config:
         orm_mode = True
+
+class BusinessUpdateSchema(BaseModel):
+    name: Optional[str] = None
+    vt_platform_id: Optional[str] = None
+    api_key: Optional[str] = None
+    is_active: Optional[bool] = None
+    is_local_test: Optional[bool] = None
+    is_prod_test: Optional[bool] = None
+
+    class Config:
+        orm_mode = True
