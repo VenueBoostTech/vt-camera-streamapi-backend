@@ -72,3 +72,27 @@ def get_business_id_by_vt_platform_id(
     if not business:
         raise HTTPException(status_code=404, detail="Business with this vt_platform_id not found")
     return {"business_id": business.id}
+
+@router.put("/{business_id}", response_model=BusinessSchema)
+def update_business(
+    business_id: str,
+    business_update: BusinessSchema,
+    db: Session = Depends(get_db)
+):
+    """
+    Update an existing business.
+    """
+    business = db.query(BusinessModel).filter(BusinessModel.id == business_id).first()
+    if not business:
+        raise HTTPException(status_code=404, detail="Business not found")
+
+    # Update fields
+    business.name = business_update.name
+    business.vt_platform_id = business_update.vt_platform_id
+    business.api_key = business_update.api_key
+    business.is_active = business_update.is_active
+
+    db.commit()
+    db.refresh(business)
+
+    return business
