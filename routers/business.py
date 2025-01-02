@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List
 from database import get_db
 from models.business import Business as BusinessModel
-from schemas.business import BusinessSchema
+from schemas.business import BusinessSchema, BusinessUpdateSchema
 import uuid
 
 router = APIRouter()
@@ -78,23 +78,17 @@ def get_business_id_by_vt_platform_id(
 @router.put("/{business_id}", response_model=BusinessSchema)
 def update_business(
     business_id: str,
-    business_update: BusinessSchema,
+    business_update: BusinessUpdateSchema,
     db: Session = Depends(get_db)
 ):
-    """
-    Update an existing business.
-    """
     business = db.query(BusinessModel).filter(BusinessModel.id == business_id).first()
     if not business:
         raise HTTPException(status_code=404, detail="Business not found")
 
-    # Update fields
-    business.name = business_update.name
-    business.vt_platform_id = business_update.vt_platform_id
-    business.api_key = business_update.api_key
-    business.is_active = business_update.is_active
-    business.is_local_test = business_update.is_local_test
-    business.is_prod_test = business_update.is_prod_test
+    # Update only provided fields
+    update_data = business_update.dict(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(business, field, value)
 
     db.commit()
     db.refresh(business)
