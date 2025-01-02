@@ -16,6 +16,8 @@ class Business(Base):
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.now(timezone.utc))
     updated_at = Column(DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
+    is_local_test = Column(Boolean, default=True)
+    is_prod_test = Column(Boolean, default=True)
 
     cameras = relationship("Camera", back_populates="business")
     zones = relationship("Zone", back_populates="business")
