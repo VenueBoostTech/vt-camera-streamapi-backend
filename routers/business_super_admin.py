@@ -41,6 +41,8 @@ def create_business(
         vt_platform_id=business.vt_platform_id,
         api_key=business.api_key,
         is_active=True,
+        is_local_test=business.is_local_test,
+        is_prod_test=business.is_prod_test,
     )
 
     db.add(new_business)
@@ -93,6 +95,8 @@ def update_business(
     business.vt_platform_id = business_update.vt_platform_id
     business.api_key = business_update.api_key
     business.is_active = business_update.is_active
+    business.is_local_test = business_update.is_local_test
+    business.is_prod_test = business_update.is_prod_test
 
     db.commit()
     db.refresh(business)

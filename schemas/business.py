@@ -11,6 +11,8 @@ class BusinessSchema(BaseModel):
     is_active: Optional[bool] = True  # Optional with default value
     created_at: Optional[datetime] = Field(default_factory=lambda: datetime.now(timezone.utc))  # Optional with default
     updated_at: Optional[datetime] = Field(default_factory=lambda: datetime.now(timezone.utc))  # Optional with default
+    is_local_test: Optional[bool] = False 
+    is_prod_test: Optional[bool] = True 
 
     class Config:
         orm_mode = True
