@@ -3,7 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from routers import camera,entry_exit,analytics,vehicle_detection,smoking_detection,threat_detection,environment,security,staff,vehicle,activity,dashboard,property,zone,behavior,pattern, spaceAnalytics, securityEvent, incident, parkingEvent, parkingAnalytics, business, business_super_admin
 
 app = FastAPI(
-    title="VisionTrackAPI"
+    title="VisionTrackAPI",
+    redirect_slashes=True
 )
 
 # CORS middleware setup
@@ -12,7 +13,7 @@ app.add_middleware(
     allow_origins=["*"],  # Adjust this in production
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"],
+    allow_headers=["*"]
 )
 
 # Include routers
