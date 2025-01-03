@@ -29,7 +29,7 @@ class Camera(Base):
     location = Column(String, nullable=True)
     direction = Column(String, nullable=True)
     coverage_area = Column(JSON, nullable=True)  # Field of view polygon as JSON
-
+    store_id = Column(String, nullable=True) 
     # Relationships
     zone = relationship("Zone", back_populates="cameras")
     detections = relationship("Detection", back_populates="camera")

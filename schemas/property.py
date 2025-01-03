@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
 from uuid import UUID
-from datetime import datetime
+from datetime import datetime, timezone
 from models.property import PropertyType, BuildingType
 
 # Address model
@@ -32,8 +32,8 @@ class PropertyCreate(BaseModel):
     type: PropertyType
     address: str
     settings: Optional[dict] = Field(default_factory=dict)
-    created_at: datetime
-    updated_at: datetime
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     buildings: List[BuildingCreateNested] = Field(default_factory=list)
 
 # PropertyResponse model

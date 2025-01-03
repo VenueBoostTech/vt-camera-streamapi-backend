@@ -7,13 +7,14 @@ class CameraBase(BaseModel):
     camera_id: str
     rtsp_url: Optional[str] = None
     status: str = "ACTIVE"  # Default to "ACTIVE" as per the SQLAlchemy model
-    property_id: Optional[str] = None
-    zone_id: Optional[str] = None
+    property_id: str
+    zone_id: str
     capabilities: Optional[List[str]] = None  # JSON encoded as a string
     name: str
     location: Optional[str] = None
     direction: Optional[str] = None
     coverage_area: Optional[dict] = None  # JSON field for the coverage area
+    store_id: Optional[str] = None
 
 class CameraCreate(CameraBase):
     pass
