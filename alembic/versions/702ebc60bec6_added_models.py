@@ -1,8 +1,8 @@
-"""Add api key optional
+"""Added models
 
-Revision ID: 434a39251053
+Revision ID: 702ebc60bec6
 Revises: 
-Create Date: 2025-01-02 12:24:27.821083
+Create Date: 2025-01-03 22:19:39.441391
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '434a39251053'
+revision: str = '702ebc60bec6'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -28,6 +28,8 @@ def upgrade() -> None:
     sa.Column('is_active', sa.Boolean(), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=True),
     sa.Column('updated_at', sa.DateTime(), nullable=True),
+    sa.Column('is_local_test', sa.Boolean(), nullable=True),
+    sa.Column('is_prod_test', sa.Boolean(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_businesses_vt_platform_id'), 'businesses', ['vt_platform_id'], unique=True)

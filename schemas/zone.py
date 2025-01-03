@@ -18,6 +18,7 @@ class ZoneCreate(BaseModel):
     access_level: Optional[str] = None
     capacity: Optional[int] = None 
     square_footage: Optional[float] = None
+    store_id: Optional[str]
 
 
 class ZoneResponse(BaseModel):
@@ -34,6 +35,7 @@ class ZoneResponse(BaseModel):
     access_level: Optional[str] = None
     capacity: Optional[int] = None
     square_footage: Optional[float] = None
+    store_id : Optional[str] 
 
     @classmethod
     def model_validate(cls, obj):

@@ -45,6 +45,7 @@ class Zone(Base):
     capacity = Column(Integer, nullable=True)
     square_footage = Column(Float, nullable=True)
     business_id = Column(String, ForeignKey("businesses.id"), nullable=False)
+    store_id = Column(String, nullable=True) 
 
     # Relationships
     property = relationship("Property", back_populates="zones")

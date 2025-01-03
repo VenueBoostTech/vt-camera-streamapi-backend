@@ -16,7 +16,6 @@ def read_businesses_as_superadmin(
     db: Session = Depends(get_db),
     superadmin_check: None = Depends(verify_superadmin_api_key),
 ):
-
     businesses = db.query(BusinessModel).offset(skip).limit(limit).all()
     return businesses
 
@@ -69,7 +68,7 @@ def read_business(
 def get_business_id_by_vt_platform_id(
     vt_platform_id: str,
     db: Session = Depends(get_db),
-    superadmin_check: None = Depends(verify_superadmin_api_key),
+    superadmin_check = Depends(verify_superadmin_api_key),
 ):
     business = db.query(BusinessModel).filter(BusinessModel.vt_platform_id == vt_platform_id).first()
     if not business:
@@ -81,7 +80,7 @@ def update_business(
     business_id: str,
     business_update: BusinessUpdateSchema,  # Use the partial update schema
     db: Session = Depends(get_db),
-    superadmin_check: None = Depends(verify_superadmin_api_key),  # Superadmin auth
+    superadmin_check= Depends(verify_superadmin_api_key),  # Superadmin auth
 ):
     business = db.query(BusinessModel).filter(BusinessModel.id == business_id).first()
     if not business:
@@ -96,3 +95,21 @@ def update_business(
     db.refresh(business)
 
     return business
+
+@router.delete("/{business_id}", response_model=dict)
+def delete_business(
+    business_id: str,
+    db: Session = Depends(get_db),
+    superadmin_check: None = Depends(verify_superadmin_api_key),
+):
+    """
+    Delete a business by its ID.
+    """
+    business = db.query(BusinessModel).filter(BusinessModel.id == business_id).first()
+    if not business:
+        raise HTTPException(status_code=404, detail="Business not found")
+
+    db.delete(business)
+    db.commit()
+
+    return {"message": f"Business with ID {business_id} has been deleted successfully"}
