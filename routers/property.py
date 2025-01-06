@@ -4,7 +4,7 @@ from typing import List
 from database import get_db
 from models import property as property_model
 from schemas import property as property_schema
-from uuid import UUID
+import uuid
 import json
 from datetime import datetime
 from utils.auth_middleware import verify_business_auth
@@ -31,10 +31,12 @@ def create_property(
     db.add(db_property)
     db.flush()  # Flush to get the property ID
 
-    # Create associated buildings
+    # Create associated buildings with auto-generated IDs
     for building_data in property.buildings:
         db_building = property_model.Building(
+            id=str(uuid.uuid4()),  # Auto-generate a unique ID for the building
             property_id=db_property.id,
+            business_id=business.id,  # Link building to the authenticated business
             name=building_data.name,
             type=building_data.type,
             sub_address=building_data.sub_address,
@@ -42,9 +44,11 @@ def create_property(
         )
         db.add(db_building)
 
+
     db.commit()
     db.refresh(db_property)
     return db_property
+
 
 @router.get("/properties/", response_model=List[property_schema.PropertyResponse])
 def read_properties(
@@ -57,7 +61,9 @@ def read_properties(
         property_model.Property.business_id == business.id  # Ensure properties belong to the business
     ).offset(skip).limit(limit).all()
 
+
     return properties
+
 
 @router.get("/properties/{property_id}", response_model=property_schema.ExtendedPropertyResponse)
 def read_property(
@@ -70,10 +76,13 @@ def read_property(
         property_model.Property.business_id == business.id,  # Ensure the property belongs to the business
     ).first()
 
+
     if db_property is None:
         raise HTTPException(status_code=404, detail="Property not found")
 
+
     return db_property
+
 
 @router.put("/properties/{property_id}", response_model=property_schema.ExtendedPropertyResponse)
 def update_property(
@@ -87,12 +96,15 @@ def update_property(
         property_model.Property.business_id == business.id,  # Ensure the property belongs to the business
     ).first()
 
+
     if db_property is None:
         raise HTTPException(status_code=404, detail="Property not found")
+
 
     # Update property fields
     for key, value in property_update.model_dump(exclude={"buildings"}).items():
         setattr(db_property, key, value)
+
 
     # Update buildings
     if property_update.buildings:
@@ -101,6 +113,7 @@ def update_property(
         for building in db_property.buildings:
             if building.name not in existing_building_names:
                 db.delete(building)
+
 
         # Update or create buildings
         for building_data in property_update.buildings:
@@ -123,10 +136,12 @@ def update_property(
                 )
                 db.add(db_building)
 
+
     db_property.updated_at = datetime.utcnow()
     db.commit()
     db.refresh(db_property)
     return db_property
+
 
 @router.delete("/properties/{property_id}")
 def delete_property(
@@ -139,12 +154,15 @@ def delete_property(
         property_model.Property.business_id == business.id,  # Ensure the property belongs to the business
     ).first()
 
+
     if db_property is None:
         raise HTTPException(status_code=404, detail="Property not found")
+
 
     db.delete(db_property)
     db.commit()
     return {"message": "Property deleted successfully"}
+
 
 
 # Building routes
@@ -165,6 +183,7 @@ def create_building(
             detail=f"Property with ID {building.property_id} not found or unauthorized",
         )
 
+
     # Create building
     db_building = property_model.Building(
         property_id=building.property_id,
@@ -175,6 +194,7 @@ def create_building(
         business_id=business.id,  # Link building to the authenticated business
     )
 
+
     db.add(db_building)
     try:
         db.commit()
@@ -183,7 +203,9 @@ def create_building(
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
+
     return db_building
+
 
 
 @router.get("/buildings/{building_id}", response_model=property_schema.ExtendedBuildingResponse)
@@ -200,7 +222,9 @@ def read_building(
     if db_building is None:
         raise HTTPException(status_code=404, detail="Building not found or unauthorized")
 
+
     return db_building
+
 
 
 @router.put("/buildings/{building_id}", response_model=property_schema.BuildingResponse)
@@ -218,13 +242,16 @@ def update_building(
     if db_building is None:
         raise HTTPException(status_code=404, detail="Building not found or unauthorized")
 
+
     # Update fields
     for key, value in building_update.model_dump().items():
         setattr(db_building, key, value)
 
+
     db.commit()
     db.refresh(db_building)
     return db_building
+
 
 
 @router.get("/buildings/", response_model=List[property_schema.BuildingResponse])
@@ -239,6 +266,7 @@ def read_buildings(
         property_model.Building.business_id == business.id  # Ensure buildings belong to the business
     ).offset(skip).limit(limit).all()
 
+
     # Ensure settings is always a dict
     for building in buildings:
         if building.settings is None:
@@ -249,7 +277,9 @@ def read_buildings(
             except json.JSONDecodeError:
                 building.settings = {}
 
+
     return buildings
+
 
 
 @router.delete("/buildings/{building_id}")
@@ -266,9 +296,11 @@ def delete_building(
     if db_building is None:
         raise HTTPException(status_code=404, detail="Building not found or unauthorized")
 
+
     db.delete(db_building)
     db.commit()
     return {"message": "Building deleted successfully"}
+
 
 # Floor routes
 @router.post("/floors/", response_model=property_schema.FloorResponse)
@@ -282,6 +314,7 @@ def create_floor(floor: property_schema.FloorCreate, db: Session = Depends(get_d
     db.commit()
     db.refresh(db_floor)
     return db_floor
+
 
 @router.get("/floors/", response_model=List[property_schema.FloorResponse])
 def read_floors(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
@@ -301,12 +334,14 @@ def read_floors(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     return floors
 
 
+
 @router.get("/floors/{floor_id}", response_model=property_schema.FloorResponse)
 def read_floor(floor_id: str, db: Session = Depends(get_db)):
     db_floor = db.query(property_model.Floor).filter(property_model.Floor.id == floor_id).first()
     if db_floor is None:
         raise HTTPException(status_code=404, detail="Floor not found")
     return db_floor
+
 
 @router.put("/floors/{floor_id}", response_model=property_schema.FloorResponse)
 def update_floor(floor_id: str, floor_update: property_schema.FloorCreate, db: Session = Depends(get_db)):
@@ -320,6 +355,7 @@ def update_floor(floor_id: str, floor_update: property_schema.FloorCreate, db: S
     db.commit()
     db.refresh(db_floor)
     return db_floor
+
 
 @router.delete("/floors/{floor_id}")
 def delete_floor(floor_id: str, db: Session = Depends(get_db)):
