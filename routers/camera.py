@@ -12,9 +12,12 @@ from utils.auth_middleware import verify_business_auth
 from fastapi import Header
 import backoff
 from sqlalchemy.exc import OperationalError
+import logging
+from fastapi.logger import logger
 
 router = APIRouter()
-
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 @router.post("/", response_model=camera_schema.Camera)
 def create_camera(
@@ -22,12 +25,17 @@ def create_camera(
     db: Session = Depends(get_db),
     business: Business = Depends(verify_business_auth)  # Authentication middleware
 ):
+    # Log incoming request data
+    logger.info(f"Received camera creation request: {camera.model_dump()}")
+    logger.info(f"Authenticated business ID: {business.id}")
+
     # Validate property_id
     property_exists = db.query(Property).filter(
         Property.id == camera.property_id,
         Property.business_id == business.id
     ).first()
     if not property_exists:
+        logger.error(f"Invalid or unauthorized property_id: {camera.property_id}")
         raise HTTPException(status_code=400, detail="Invalid or unauthorized property_id")
 
     # Validate zone_id
@@ -36,7 +44,12 @@ def create_camera(
         Zone.business_id == business.id
     ).first()
     if not zone_exists:
+        logger.error(f"Invalid or unauthorized zone_id: {camera.zone_id}")
         raise HTTPException(status_code=400, detail="Invalid or unauthorized zone_id")
+
+    # Log camera capabilities serialization
+    capabilities_serialized = json.dumps(camera.capabilities) if camera.capabilities else None
+    logger.info(f"Serialized capabilities: {capabilities_serialized}")
 
     # Serialize capabilities field and assign business_id
     db_camera = camera_model.Camera(
@@ -45,7 +58,7 @@ def create_camera(
         status=camera.status,
         property_id=camera.property_id,  # Required field
         zone_id=camera.zone_id,          # Required field
-        capabilities=json.dumps(camera.capabilities) if camera.capabilities else None,
+        capabilities=capabilities_serialized,
         name=camera.name,
         location=camera.location,
         direction=camera.direction,
@@ -58,8 +71,10 @@ def create_camera(
         db.commit()
         db.refresh(db_camera)
         db_camera.capabilities = json.loads(db_camera.capabilities) if db_camera.capabilities else []
+        logger.info(f"Successfully created camera: {db_camera}")
         return db_camera
     except Exception as e:
+        logger.exception("Error occurred while creating the camera")
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 

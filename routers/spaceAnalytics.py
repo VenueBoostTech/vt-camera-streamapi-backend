@@ -49,18 +49,20 @@ def create_property_heatmap(id: UUID, heatmap_data: HeatmapDataCreate, db: Sessi
 
 
 # GET /api/v1/properties/{id}/analytics/demographics
-@router.get("/properties/{id}/analytics/demographics", response_model=List[Demographics])
-def get_property_demographics(id: UUID, db: Session = Depends(get_db)):
-    demographics = demographics_crud.get_by_property(db, property_id=id)
+@router.get("/zones/{zone_id}/analytics/demographics", response_model=List[Demographics])
+def get_zone_demographics(zone_id: str, db: Session = Depends(get_db)):
+
+    demographics = demographics_crud.get_by_zone(db, zone_id=zone_id)
     if not demographics:
-        raise HTTPException(status_code=404, detail="No demographics data found for this property")
+        raise HTTPException(status_code=404, detail="No demographics data found for this zone")
     return demographics
 
-@router.post("/properties/{id}/analytics/demographics", response_model=Demographics)
-def create_property_demographics(id: UUID, demographics_data: Demographics, db: Session = Depends(get_db)):
-    # Verify if the property_id in the payload matches the route id
-    if demographics_data.zone_id != id:
-        raise HTTPException(status_code=400, detail="Property ID in payload does not match route ID")
+@router.post("/zones/{zone_id}/analytics/demographics", response_model=Demographics)
+def create_zone_demographics(zone_id: str, demographics_data: Demographics, db: Session = Depends(get_db)):
+
+    # Ensure the zone ID in the payload matches the zone ID in the route
+    if demographics_data.zone_id != zone_id:
+        raise HTTPException(status_code=400, detail="Zone ID in payload does not match route ID")
 
     # Create demographics entry
     new_demographics = demographics_crud.create(db, demographics_data=demographics_data)

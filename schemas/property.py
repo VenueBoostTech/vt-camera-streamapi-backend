@@ -19,6 +19,9 @@ class BuildingCreate(BaseModel):
     sub_address: Optional[str] = None  # Optional field for sub-address
     settings: Optional[dict] = Field(default_factory=dict)  # JSON-compatible settings
     property_id: str
+    type: Optional[BuildingType] = None
+    below_ground_floor: Optional[int] = None
+    total_floors: Optional[int] = None
 
 class BuildingCreateNested(BaseModel):
     name: str
@@ -55,9 +58,11 @@ class BuildingResponse(BaseModel):
     id: UUID
     property_id: UUID
     name: str
-    type: BuildingType
+    type: Optional[BuildingType] = None
     sub_address: Optional[str] = None
     settings: Optional[dict] = Field(default_factory=dict)
+    below_ground_floor: Optional[int] = None
+    total_floors: Optional[int] = None
 
     class Config:
         orm_mode = True

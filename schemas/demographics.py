@@ -5,11 +5,11 @@ from uuid import UUID
 
 
 class DemographicsBase(BaseModel):
-    zone_id: UUID
+    zone_id: str
     timestamp: datetime
     total_count: int
-    age_groups: Dict[str, int]  # Example: {"18-25": 20, "26-35": 30}
-    gender_distribution: Dict[str, int]  # Example: {"male": 50, "female": 50}
+    age_groups: Dict[str, int]
+    gender_distribution: Dict[str, int]
 
 class DemographicsCreate(DemographicsBase):
     pass
