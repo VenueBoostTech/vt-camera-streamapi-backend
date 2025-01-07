@@ -12,6 +12,7 @@ class PropertyType(str, Enum):
     RESIDENTIAL = "RESIDENTIAL"
     COMMERCIAL = "COMMERCIAL"
     MIXED = "MIXED"
+    RETAIL = "RETAIL"
 
 class BuildingType(str, Enum):
     RESIDENTIAL = "RESIDENTIAL"
@@ -60,9 +61,11 @@ class Building(Base):
     property_id = Column(String, ForeignKey("properties.id", ondelete="CASCADE"), nullable=False)
     business_id = Column(String, ForeignKey("businesses.id", ondelete="CASCADE"), nullable=False)
     name = Column(String, nullable=False)
-    type = Column(SQLAlchemyEnum(BuildingType), nullable=False)
+    type = Column(SQLAlchemyEnum(BuildingType), nullable=True)
     sub_address = Column(String, nullable=True)
     settings = Column(JSONString, nullable=True, default={})  # Using our custom type
+    below_ground_floor = Column(Integer, nullable=True)
+    total_floor = Column(Integer, nullable=True)
 
 
     # Relationships

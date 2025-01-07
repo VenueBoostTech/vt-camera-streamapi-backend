@@ -8,13 +8,12 @@ import json
 class ZoneType(str, Enum):
     ENTRANCE = "ENTRANCE"
     LOBBY = "LOBBY"
-    HALLWAY = "HALLWAY"
     STAIRWELL = "STAIRWELL"
     GARAGE = "GARAGE"
     OFFICE_ROOM = "OFFICE_ROOM"
     MEETING_ROOM = "MEETING_ROOM"
     APARTMENT = "APARTMENT"
-    RETAIL_SPACE = "RETAIL_SPACE"
+    RETAIL_SPACE = "RETAIL"
     STORAGE_ROOM = "STORAGE_ROOM"
     BATHROOM = "BATHROOM"
     KITCHEN = "KITCHEN"
@@ -24,9 +23,13 @@ class ZoneType(str, Enum):
     UTILITY = "UTILITY"
     SERVER_ROOM = "SERVER_ROOM"
     OUTDOOR = "OUTDOOR"
-    PARKING_LOT = "PARKING_LOT"
+    PARKING_LOT = "PARKING"
     GARDEN = "GARDEN"
     ROOFTOP = "ROOFTOP"
+    SERVICE = "SERVICE"
+    WAREHOUSE = "WAREHOUSE"
+    UNKNOWN = "UNKNOWN"
+    HALL = "HALL"
 
 class Zone(Base):
     __tablename__ = "zones"
@@ -34,7 +37,7 @@ class Zone(Base):
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     property_id = Column(String, ForeignKey("properties.id"), nullable=False)
     building_id = Column(String, ForeignKey("buildings.id"), nullable=False)
-    floor_id = Column(String, ForeignKey("floors.id"), nullable=False)
+    floor_id = Column(String, ForeignKey("floors.id"), nullable=True)
     name = Column(String, index=True, nullable=False)
     type = Column(SQLAlchemyEnum(ZoneType), nullable=False)
     polygon = Column(String)  # JSON-encoded
@@ -46,6 +49,7 @@ class Zone(Base):
     square_footage = Column(Float, nullable=True)
     business_id = Column(String, ForeignKey("businesses.id"), nullable=False)
     store_id = Column(String, nullable=True) 
+    floor = Column(Integer, nullable=True)
 
     # Relationships
     property = relationship("Property", back_populates="zones")

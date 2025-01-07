@@ -8,7 +8,7 @@ import json
 class ZoneCreate(BaseModel):
     property_id: str
     building_id: str
-    floor_id: str
+    floor_id: Optional[str] = None
     name: str
     type: ZoneType
     polygon: Optional[List[Dict[str, int]]] = None
@@ -19,13 +19,14 @@ class ZoneCreate(BaseModel):
     capacity: Optional[int] = None 
     square_footage: Optional[float] = None
     store_id: Optional[str]
+    floor : Optional[int] = None
 
 
 class ZoneResponse(BaseModel):
     id: str
     property_id: str
     building_id: str
-    floor_id: str
+    floor_id: Optional[str] = None
     name: str
     type: ZoneType
     polygon: Optional[str] = None
@@ -36,6 +37,7 @@ class ZoneResponse(BaseModel):
     capacity: Optional[int] = None
     square_footage: Optional[float] = None
     store_id : Optional[str] = None
+    floor : Optional[int] = None
 
     @classmethod
     def model_validate(cls, obj):
