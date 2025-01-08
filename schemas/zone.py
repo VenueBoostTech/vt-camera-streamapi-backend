@@ -18,7 +18,7 @@ class ZoneCreate(BaseModel):
     access_level: Optional[str] = None
     capacity: Optional[int] = None 
     square_footage: Optional[float] = None
-    store_id: Optional[str]
+    store_id: Optional[str] = None
     floor : Optional[int] = None
 
 
