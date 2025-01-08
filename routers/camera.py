@@ -120,15 +120,15 @@ def read_cameras(
     return cameras
 
 
-@router.put("/{camera_id}", response_model=camera_schema.Camera)
+@router.put("/{id}", response_model=camera_schema.Camera)
 def update_camera(
-    camera_id: str,
+    id: str,
     camera: camera_schema.CameraCreate,  # CameraCreate now has required fields
     db: Session = Depends(get_db),
     business: Business = Depends(verify_business_auth)
 ):
     db_camera = db.query(camera_model.Camera).filter(
-        camera_model.Camera.camera_id == camera_id,
+        camera_model.Camera.id == id,
         camera_model.Camera.business_id == business.id
     ).first()
 
@@ -148,7 +148,6 @@ def update_camera(
     ).first()
     if not zone_exists:
         raise HTTPException(status_code=400, detail="Invalid zone_id")
-
     # Update camera fields
     for key, value in camera.dict(exclude_unset=True).items():
         setattr(db_camera, key, value)
@@ -158,9 +157,10 @@ def update_camera(
     return db_camera
 
 
-@router.delete("/{camera_id}", response_model=camera_schema.Camera)
+
+@router.delete("/{id}")
 def delete_camera(
-    camera_id: str,
+    id: str,
     db: Session = Depends(get_db),
     business: Business = Depends(verify_business_auth),
 ):
@@ -171,11 +171,10 @@ def delete_camera(
         giveup=lambda e: "database is locked" not in str(e)
     )
     def delete_operation():
-        # Start a new transaction
         db.begin_nested()
         try:
             db_camera = db.query(camera_model.Camera).filter(
-                camera_model.Camera.camera_id == camera_id,
+                camera_model.Camera.id == id,
                 camera_model.Camera.business_id == business.id,
             ).with_for_update().first()
 
@@ -184,7 +183,7 @@ def delete_camera(
 
             db.delete(db_camera)
             db.commit()
-            return f"Camera {camera_id} has been successfully deleted"
+            return {"message": f"Camera {id} has been successfully deleted"}
         except Exception as e:
             db.rollback()
             raise e
