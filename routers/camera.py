@@ -127,6 +127,7 @@ def update_camera(
     db: Session = Depends(get_db),
     business: Business = Depends(verify_business_auth)
 ):
+    # Retrieve the camera to be updated
     db_camera = db.query(camera_model.Camera).filter(
         camera_model.Camera.id == id,
         camera_model.Camera.business_id == business.id
@@ -137,24 +138,43 @@ def update_camera(
 
     # Validate property_id
     property_exists = db.query(Property).filter(
-        Property.id == camera.property_id, Property.business_id == business.id
+        Property.id == camera.property_id,
+        Property.business_id == business.id
     ).first()
     if not property_exists:
-        raise HTTPException(status_code=400, detail="Invalid property_id")
+        raise HTTPException(status_code=400, detail="Invalid or unauthorized property_id")
 
     # Validate zone_id
     zone_exists = db.query(Zone).filter(
-        Zone.id == camera.zone_id, Zone.business_id == business.id
+        Zone.id == camera.zone_id,
+        Zone.business_id == business.id
     ).first()
     if not zone_exists:
-        raise HTTPException(status_code=400, detail="Invalid zone_id")
-    # Update camera fields
-    for key, value in camera.dict(exclude_unset=True).items():
-        setattr(db_camera, key, value)
+        raise HTTPException(status_code=400, detail="Invalid or unauthorized zone_id")
 
-    db.commit()
-    db.refresh(db_camera)
-    return db_camera
+    # Update the fields in the database object
+    for key, value in camera.model_dump(exclude_unset=True).items():
+        if key == "capabilities" and value is not None:
+            # Serialize capabilities field
+            setattr(db_camera, key, json.dumps(value))
+        else:
+            setattr(db_camera, key, value)
+
+    try:
+        # Commit changes to the database
+        db.commit()
+        db.refresh(db_camera)
+
+        # Deserialize capabilities before returning the response
+        db_camera.capabilities = (
+            json.loads(db_camera.capabilities) if db_camera.capabilities else []
+        )
+        return db_camera
+    except Exception as e:
+        # Handle exceptions and rollback transaction
+        db.rollback()
+        logger.exception("Error occurred while updating the camera")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 
