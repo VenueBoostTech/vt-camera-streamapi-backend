@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, DateTime, JSON, ForeignKey, Integer, LargeBinary
+from sqlalchemy import Column, String, DateTime, JSON, ForeignKey, Integer, LargeBinary, Float
 from sqlalchemy.dialects.postgresql import UUID as PostgresUUID  # If using PostgreSQL
 import numpy as np
 import json
@@ -11,19 +11,14 @@ class HeatmapData(Base):
     __tablename__ = "heatmap_data"
 
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))  # UUID as a string
-    zone_id = Column(String, ForeignKey("zones.id"), nullable=False)
-    property_id = Column(String, ForeignKey("properties.id"), nullable=True)
-    timestamp = Column(DateTime, nullable=False, default=datetime.now(timezone.utc))
-    resolution = Column(JSON, nullable=False)  # Store resolution as JSON (e.g., {"width": 1920, "height": 1080})
-    data = Column(LargeBinary, nullable=False)  # Store the heatmap data as binary
-    meta_data = Column(JSON, nullable=True)  # Additional metadata about the heatmap
-    zone = relationship("Zone", back_populates="heatmap_data")
+    camera_id = Column(String, nullable=False)  # Identifier for the camera
+    timestamp = Column(DateTime, nullable=False, default=datetime.now(timezone.utc))  # Timestamp of the heatmap point
+    x = Column(Float, nullable=False)  # X coordinate of the point
+    y = Column(Float, nullable=False)  # Y coordinate of the point
+    weight = Column(Float, nullable=False)  # Weight value for the point
+    zone_id = Column(String, ForeignKey("zones.id"), nullable=False)  # Zone ID
+    zone = relationship("Zone", back_populates="heatmap_data")  # Relationship with Zone
 
+    def __repr__(self):
+        return f"<HeatmapData(camera_id={self.camera_id}, timestamp={self.timestamp}, x={self.x}, y={self.y}, weight={self.weight}, zone_id={self.zone_id})>"
 
-    def encode_data(self, array: np.ndarray) -> bytes:
-        """Encode NumPy array to binary format."""
-        return array.tobytes()
-
-    def decode_data(self) -> np.ndarray:
-        """Decode binary data to NumPy array."""
-        return np.frombuffer(self.data, dtype=np.float32)
