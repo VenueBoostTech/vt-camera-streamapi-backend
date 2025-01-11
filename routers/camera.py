@@ -107,11 +107,8 @@ def read_cameras(
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_db),
-    business: Business = Depends(verify_business_auth)  # Authentication middleware
 ):
-    cameras = db.query(camera_model.Camera).filter(
-        camera_model.Camera.business_id == business.id  # Filter by authenticated business
-    ).offset(skip).limit(limit).all()
+    cameras = db.query(camera_model.Camera).offset(skip).limit(limit).all()
 
     for camera in cameras:
         camera.capabilities = (
@@ -175,8 +172,6 @@ def update_camera(
         db.rollback()
         logger.exception("Error occurred while updating the camera")
         raise HTTPException(status_code=500, detail=str(e))
-
-
 
 @router.delete("/{id}")
 def delete_camera(
