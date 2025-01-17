@@ -2,8 +2,12 @@ from fastapi import Header, HTTPException, Depends
 from sqlalchemy.orm import Session
 from database import get_db
 from models.business import Business
+import os
+from dotenv import load_dotenv
 
-SUPERADMIN_API_KEY = "45437827-28cc-496d-a53b-f3129f693bb5"
+load_dotenv()
+
+SUPERADMIN_API_KEY = os.environ.get("SUPERADMIN_API_KEY")
 
 async def verify_business_auth(
     db: Session = Depends(get_db),

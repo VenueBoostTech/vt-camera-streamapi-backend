@@ -14,7 +14,7 @@ class AgeGroup(BaseModel):
 class DemographicsBase(BaseModel):
     zone_id: str = Field(..., description="Unique identifier for the zone")
     timestamp: datetime = Field(..., description="Timestamp for the demographic data")
-    total_count: int = Field(ge=0, description="Total count of individuals")
+    total_count: int = Field(default=0, ge=0, description="Total count of individuals")
     age_groups: List[AgeGroup] = Field(..., description="List of age group data")
     gender_distribution: Dict[str, int] = Field(
         ...,
