@@ -30,6 +30,7 @@ class ZoneType(str, Enum):
     WAREHOUSE = "WAREHOUSE"
     UNKNOWN = "UNKNOWN"
     HALL = "HALL"
+    COMMON_AREA = "COMMON_AREA"
 
 class Zone(Base):
     __tablename__ = "zones"
@@ -49,7 +50,7 @@ class Zone(Base):
     square_footage = Column(Float, nullable=True)
     business_id = Column(String, ForeignKey("businesses.id"), nullable=False)
     store_id = Column(String, nullable=True) 
-    floor = Column(Integer, nullable=True)
+    floor_number = Column(Integer, nullable=True)
 
     # Relationships
     property = relationship("Property", back_populates="zones")

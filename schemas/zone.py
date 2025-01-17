@@ -19,7 +19,7 @@ class ZoneCreate(BaseModel):
     capacity: Optional[int] = None 
     square_footage: Optional[float] = None
     store_id: Optional[str] = None
-    floor : Optional[int] = None
+    floor_number: Optional[int] = None
 
 
 class ZoneResponse(BaseModel):

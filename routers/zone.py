@@ -8,6 +8,10 @@ from schemas.zone import ZoneCreate, ZoneResponse
 import json
 from models.business import Business
 from utils.auth_middleware import verify_business_auth
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -78,6 +82,11 @@ def update_zone(
     db: Session = Depends(get_db),
     business: Business = Depends(verify_business_auth),  # Middleware for business validation
 ):
+    # Log the incoming request
+    logger.info(f"Incoming PUT request to update zone {zone_id}")
+    logger.info(f"Request body: {zone.dict()}")
+    logger.info(f"Business ID: {business.id}")
+
     # Retrieve the zone to update
     db_zone = db.query(Zone).filter(
         Zone.id == str(zone_id),
@@ -88,11 +97,14 @@ def update_zone(
         raise HTTPException(status_code=404, detail="Zone not found")
 
     # Update fields dynamically
-    for key, value in zone.dict(exclude_unset=True).items():
+    for key, value in zone.model_dump(exclude_unset=True).items():
+        logger.info(f"Updating field {key} to {value}")  # Log each update
         setattr(db_zone, key, value)
 
     db.commit()
     db.refresh(db_zone)
+    logger.info(f"Zone {zone_id} successfully updated")
+
     return db_zone
 
 @router.delete("/zones/{zone_id}")
