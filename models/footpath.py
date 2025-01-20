@@ -37,7 +37,7 @@ class FootpathPattern(Base):
     frequency = Column(Integer, nullable=False, default=1)
     avg_duration = Column(Float, nullable=True)  # Average time to complete pattern
     confidence = Column(Float, nullable=True)
-    metadata = Column(JSON, nullable=True)  # Additional pattern metadata
+    footpath_metadata = Column(JSON, nullable=True)  # Additional pattern metadata
 
     # Relationships
     zone = relationship("Zone", back_populates="footpath_patterns")
