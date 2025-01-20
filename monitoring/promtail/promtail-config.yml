@@ -1,0 +1,62 @@
+# Log collection config
+
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  - job_name: footpath_logs
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: footpath_analysis
+          __path__: /var/log/*.log
+
+  - job_name: system_logs
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: system_logs
+          __path__: /var/log/system.log
+
+  - job_name: analytics_logs
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: analytics
+          __path__: /var/log/analytics.log
+
+  - job_name: error_logs
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: errors
+          __path__: /var/log/error.log
+
+  - job_name: camera_logs
+    pipeline_stages:
+      - json:
+          expressions:
+            camera_id: camera_id
+            business_id: business_id
+            status: status
+      - labels:
+          camera_id:
+          business_id:
+          status:
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: camera_status
+          __path__: /var/log/camera_*.log

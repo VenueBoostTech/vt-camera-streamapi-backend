@@ -5,8 +5,6 @@ from typing import List, Optional
 from datetime import datetime
 from schemas.footpath import FootpathAnalytics, FootpathPattern
 from crud.footpath import footpath_crud
-from models.business import Business
-from utils.auth_middleware import verify_business_auth
 
 router = APIRouter()
 
@@ -14,15 +12,13 @@ router = APIRouter()
 def create_footpath_analytics(
     zone_id: str,
     analytics_data: FootpathAnalytics,
-    db: Session = Depends(get_db),
-    business: Business = Depends(verify_business_auth)
+    db: Session = Depends(get_db)
 ):
     """Create new footpath analytics for a zone"""
     return footpath_crud.create_analytics(
         db=db,
         zone_id=zone_id,
-        analytics_data=analytics_data.dict(),
-        business_id=business.id
+        analytics_data=analytics_data.dict()
     )
 
 @router.get("/vt/api/v1/footpath/analytics/{zone_id}", response_model=List[FootpathAnalytics])
@@ -30,14 +26,12 @@ def get_zone_analytics(
     zone_id: str,
     start_time: Optional[datetime] = None,
     end_time: Optional[datetime] = None,
-    db: Session = Depends(get_db),
-    business: Business = Depends(verify_business_auth)
+    db: Session = Depends(get_db)
 ):
     """Get footpath analytics for a specific zone"""
     return footpath_crud.get_zone_analytics(
         db=db,
         zone_id=zone_id,
-        business_id=business.id,
         start_time=start_time,
         end_time=end_time
     )
@@ -46,14 +40,12 @@ def get_zone_analytics(
 def get_zone_patterns(
     zone_id: str,
     min_frequency: int = 2,
-    db: Session = Depends(get_db),
-    business: Business = Depends(verify_business_auth)
+    db: Session = Depends(get_db)
 ):
     """Get footpath patterns for a zone"""
     return footpath_crud.get_patterns(
         db=db,
         zone_id=zone_id,
-        business_id=business.id,
         min_frequency=min_frequency
     )
 
@@ -61,13 +53,11 @@ def get_zone_patterns(
 def create_pattern(
     zone_id: str,
     pattern_data: FootpathPattern,
-    db: Session = Depends(get_db),
-    business: Business = Depends(verify_business_auth)
+    db: Session = Depends(get_db)
 ):
     """Create new footpath pattern"""
     return footpath_crud.create_pattern(
         db=db,
         zone_id=zone_id,
-        pattern_data=pattern_data.dict(),
-        business_id=business.id
+        pattern_data=pattern_data.dict()
     )
