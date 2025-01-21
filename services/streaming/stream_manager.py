@@ -14,45 +14,49 @@ class StreamManager:
         self.active_streams: Dict[str, subprocess.Popen] = {}
 
     def start_stream(self, camera_id: str, rtsp_url: str) -> bool:
-        """Start streaming for a camera"""
-        if camera_id in self.active_streams:
-            logger.warning(f"Stream already active for camera {camera_id}")
-            return False
-
         output_path = self.output_dir / f"{camera_id}"
         output_path.mkdir(exist_ok=True)
 
-        try:
-            # FFmpeg command to convert RTSP to HLS
-            command = [
-                'ffmpeg',
-                '-i', rtsp_url,
-                '-c:v', 'libx264',
-                '-c:a', 'aac',
-                '-hls_time', '2',
-                '-hls_list_size', '3',
-                '-hls_flags', 'delete_segments',
-                '-f', 'hls',
-                str(output_path / 'stream.m3u8')
-            ]
+        command = [
+            'ffmpeg',
+            '-rtsp_transport', 'tcp',
+            '-i', rtsp_url,
+            '-c:v', 'libx264',
+            '-c:a', 'aac',
+            '-preset', 'ultrafast',
+            '-tune', 'zerolatency',
+            '-hls_time', '2',
+            '-hls_list_size', '10',
+            '-f', 'hls',
+            '-hls_flags', 'delete_segments',
+            str(output_path / 'stream.m3u8')
+        ]
 
+        try:
+            logger.info(f"Executing FFmpeg command: {' '.join(command)}")
             process = subprocess.Popen(
                 command,
                 stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE
+                stderr=subprocess.PIPE,
+                universal_newlines=True
             )
-
             self.active_streams[camera_id] = process
-            logger.info(f"Started streaming for camera {camera_id}")
-            return True
 
+            logger.info(f"Checking if {output_path / 'stream.m3u8'} exists...")
+            if not (output_path / 'stream.m3u8').exists():
+                logger.error(f"{output_path / 'stream.m3u8'} was not created!")
+
+            logger.info(f"Stream started for camera {camera_id} with PID {process.pid}")
+            return True
         except Exception as e:
-            logger.error(f"Error starting stream for camera {camera_id}: {str(e)}")
+            logger.error(f"Error starting stream for camera {camera_id}: {e}")
             return False
 
+
     def stop_stream(self, camera_id: str) -> bool:
-        """Stop streaming for a camera"""
+        """Stop streaming for a camera."""
         if camera_id not in self.active_streams:
+            logger.warning(f"No active stream found for camera {camera_id}")
             return False
 
         try:
@@ -70,6 +74,7 @@ class StreamManager:
                     file.unlink()
                 output_path.rmdir()
 
+            logger.info(f"Successfully stopped stream for camera {camera_id}")
             return True
 
         except Exception as e:
@@ -77,15 +82,15 @@ class StreamManager:
             return False
 
     def get_stream_url(self, camera_id: str) -> Optional[str]:
-        """Get the HLS URL for a camera stream"""
+        """Get the HLS URL for a camera stream."""
         if camera_id not in self.active_streams:
             return None
-
         return f"/streams/{camera_id}/stream.m3u8"
 
     def cleanup(self):
-        """Stop all active streams"""
+        """Stop all active streams."""
         for camera_id in list(self.active_streams.keys()):
             self.stop_stream(camera_id)
+
 
 stream_manager = StreamManager()
