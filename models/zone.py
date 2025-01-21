@@ -56,6 +56,8 @@ class Zone(Base):
     property = relationship("Property", back_populates="zones")
     floor = relationship("Floor", back_populates="zones")
     cameras = relationship("Camera", back_populates="zone")
+    footpath_analytics = relationship("FootpathAnalytics", back_populates="zone")
+    footpath_patterns = relationship("FootpathPattern", back_populates="zone")
 
     # Analytics and events
     patterns = relationship("Pattern", back_populates="zone")

@@ -22,6 +22,7 @@ from .incident import Incident
 from .parkingEvent import ParkingEvent
 from .parkingAnalytics import ParkingAnalytics
 from .business import Business
+from .footpath import FootpathAnalytics, FootpathPattern
 
 from sqlalchemy.ext.declarative import declarative_base
 # Make sure all models are imported here
