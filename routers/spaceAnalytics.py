@@ -4,7 +4,7 @@ from typing import List, Dict, Optional
 from uuid import UUID
 from schemas.spaceAnalytics import SpaceAnalytics
 from schemas.heatmapData import HeatmapDataCreate, HeatmapDataResponse, HeatmapPointResponse
-from schemas.demographics import Demographics, DemographicsCreate
+from schemas.demographics import DemographicsCreate
 from crud.spaceAnalytics import space_analytics_crud, heatmap_data_crud, demographics_crud
 from database import get_db
 from datetime import datetime, timedelta
@@ -14,7 +14,7 @@ from models.zone import Zone
 from models.business import Business
 from models.property import Property
 from models.demographics import Demographics as DemographicsModel
-from schemas.demographics import Demographics as DemographicsSchema
+from schemas.demographics import DemographicsCreate as DemographicsSchema, DemographicsResponse
 import json
 import logging
 
@@ -100,7 +100,7 @@ def create_zone_heatmap(zone_id: UUID, heatmap_data: HeatmapDataCreate, db: Sess
 
 
 # GET /api/v1/properties/{id}/analytics/demographics
-@router.get("/zones/{zone_id}/analytics/demographics", response_model=Demographics)
+@router.get("/zones/{zone_id}/analytics/demographics", response_model=DemographicsResponse)
 def get_zone_demographics(
     zone_id: str,
     filter_by: str = Query(..., description="Filter by: day, week, month, quarter"),
@@ -403,7 +403,7 @@ def get_heatmap_data(
 
     return response
 
-@router.post("/zones/{zone_id}/analytics/demographics", response_model=Demographics)
+@router.post("/zones/{zone_id}/analytics/demographics", response_model=DemographicsResponse)
 def create_zone_demographics(
     zone_id: str,
     demographics_data: DemographicsCreate,
