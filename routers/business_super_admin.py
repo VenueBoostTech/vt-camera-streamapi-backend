@@ -7,6 +7,12 @@ from schemas.business import BusinessSchema, BusinessUpdateSchema
 from utils.auth_middleware import verify_superadmin_api_key
 import uuid
 
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 router = APIRouter()
 
 @router.get("/", response_model=List[BusinessSchema])
@@ -31,6 +37,8 @@ def create_business(
     # Check if the vt_platform_id already exists
     existing_business = db.query(BusinessModel).filter(BusinessModel.vt_platform_id == business.vt_platform_id).first()
     if existing_business:
+        # Log the request details for debugging
+        logger.info(f"Request data causing error: {business.dict()}")
         raise HTTPException(status_code=400, detail="Business with this vt_platform_id already exists")
 
     # Create new business
