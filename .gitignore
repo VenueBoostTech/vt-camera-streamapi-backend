@@ -155,3 +155,6 @@ __pycache__/
 # Database
 *.db
 *.sqlite3
+
+# Test environment
+test_env/
