@@ -38,9 +38,9 @@ class PersonTracker:
         # Run YOLO detection
         results = self.model(frame, classes=[0])  # class 0 is person
 
-        # Get detections in supervision format
-        detections = sv.Detections.from_yolov8(results[0])
-        
+        # Get detections in supervision format - updated for newer supervision versions
+        detections = sv.Detections.from_ultralytics(results[0])
+    
         # Apply confidence threshold
         mask = detections.confidence >= self.confidence_threshold
         detections = detections[mask]
@@ -173,29 +173,38 @@ class PersonTracker:
     
     def annotate_frame(self, frame, detections):
         """Annotate frame with bounding boxes, IDs and movement traces"""
-        # Create annotators
-        box_annotator = sv.BoxAnnotator()
-        trace_annotator = sv.TraceAnnotator(thickness=2, trace_length=20)
+        # Make a copy of the frame
+        annotated_frame = frame.copy()
         
-        # Annotate with boxes and IDs
-        labels = [f"ID: {tracker_id}" for tracker_id in detections.tracker_id]
-        annotated_frame = box_annotator.annotate(frame.copy(), detections, labels)
+        # Draw bounding boxes and IDs manually
+        if hasattr(detections, 'xyxy') and detections.xyxy is not None:
+            for i, bbox in enumerate(detections.xyxy):
+                # Convert to integers
+                x1, y1, x2, y2 = map(int, bbox)
+                
+                # Draw bounding box
+                cv2.rectangle(annotated_frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                
+                # Add ID text if available
+                if hasattr(detections, 'tracker_id') and detections.tracker_id is not None and i < len(detections.tracker_id):
+                    tracker_id = detections.tracker_id[i]
+                    if tracker_id is not None:
+                        cv2.putText(annotated_frame, f"ID: {tracker_id}", (x1, y1 - 10),
+                                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
         
-        # Add trace lines showing movement paths
-        annotated_frame = trace_annotator.annotate(annotated_frame, detections)
-        
-        # Optionally draw zones if defined
+        # Draw zones
         if self.zones:
             for zone_name, polygon in self.zones.items():
                 points = np.array(polygon, dtype=np.int32)
                 cv2.polylines(annotated_frame, [points], True, (0, 255, 0), 2)
+                
                 # Add zone name and count
                 count = len(self.zone_visits[zone_name])
                 center_x = sum(p[0] for p in polygon) // len(polygon)
                 center_y = sum(p[1] for p in polygon) // len(polygon)
                 cv2.putText(annotated_frame, f"{zone_name}: {count}", (center_x, center_y),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 0), 2)
-        
+    
         return annotated_frame
     
     def export_tracking_data(self, format='json'):

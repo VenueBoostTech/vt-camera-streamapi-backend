@@ -158,3 +158,26 @@ __pycache__/
 
 # Test environment
 test_env/
+
+# Video files
+*.mp4
+*.avi
+*.mov
+*.mkv
+
+# YOLOv8 model files
+*.pt
+yolov8*.pt
+*.onnx
+
+# Output files
+output*.mp4
+*_data.json
+output/
+results/
+
+# Generated heatmaps and visualizations
+*.png
+*.jpg
+*.jpeg
+*.svg
