@@ -19,8 +19,15 @@ class CameraProcessor:
         self.frame_resolution = None
 
         # Initialize tracker and analyzer
-        self.tracker = None
-        self.analyzer = None
+        self.tracker = PersonTracker(
+            self.frame_resolution, 
+            confidence_threshold=0.5,
+            zones={self.camera.zone.id: json.loads(self.camera.zone.polygon)} if self.camera.zone else None
+        )
+        self.analyzer = FootpathAnalyzer(
+            self.frame_resolution,
+            self.camera.zone.polygon if self.camera.zone else None
+        )
 
         # Initialize processing state
         self.last_analytics_save = datetime.datetime.now()
@@ -57,7 +64,11 @@ class CameraProcessor:
             self.frame_resolution = frame.shape[:2]
 
             # Initialize tracker and analyzer
-            self.tracker = PersonTracker(self.frame_resolution)
+            self.tracker = PersonTracker(
+                self.frame_resolution,
+                confidence_threshold=0.5,
+                zones={self.camera.zone.id: json.loads(self.camera.zone.polygon)} if self.camera.zone else None
+            )
             self.analyzer = FootpathAnalyzer(
                 self.frame_resolution,
                 self.camera.zone.polygon if self.camera.zone else None
@@ -124,6 +135,58 @@ class CameraProcessor:
         self.is_processing = False
 
     def process_frame(self, frame) -> dict:
+    """Process a single frame"""
+    start_time = time.time()
+
+    try:
+        # Update tracking
+        detections = self.tracker.update(frame)
+
+        # Get current tracks
+        tracks = self.tracker.get_tracks()
+
+        # Update analytics
+        self.analyzer.analyze_tracks(tracks)
+        
+        # Generate annotated frame for visualization
+        annotated_frame = self.tracker.annotate_frame(frame, detections)
+        
+        # Save the annotated frame periodically (e.g., every 30 frames)
+        if self.total_frames_processed % 30 == 0:
+            frame_dir = f"stream_output/{self.camera.id}"
+            os.makedirs(frame_dir, exist_ok=True)
+            cv2.imwrite(f"{frame_dir}/latest.jpg", annotated_frame)
+
+        # Calculate and log processing time
+        processing_time = time.time() - start_time
+        self.processing_times.append(processing_time)
+        self.monitor.log_processing_time(self.camera.id, processing_time)
+
+        # Log analytics data
+        if tracks:
+            analytics_data = self.analyzer.get_analytics()
+            self.monitor.log_analytics(
+                camera_id=self.camera.id,
+                zone_id=self.camera.zone.id if self.camera.zone else "no_zone",
+                analytics_data=analytics_data
+            )
+
+        return {
+            "detections": detections,
+            "tracks": len(tracks),
+            "processing_time": processing_time,
+            "annotated_frame": annotated_frame  # Return the annotated frame
+        }
+
+    except Exception as e:
+        self.monitor.log_error(
+            camera_id=self.camera.id,
+            error_type="frame_processing_error",
+            error_msg=str(e),
+            stack_trace=traceback.format_exc()
+        )
+        raise
+
         """Process a single frame"""
         start_time = time.time()
 
@@ -167,6 +230,46 @@ class CameraProcessor:
             raise
 
     def save_analytics(self):
+        """Save current analytics to database"""
+        if not self.camera.zone:
+            return
+
+    try:
+        # Get analytics data
+        analytics_data = self.analyzer.get_analytics()
+        
+        # Export tracking data
+        tracking_data = self.tracker.export_tracking_data(format='json')
+
+        # Create analytics entry
+        analytics = FootpathAnalytics(
+            zone_id=self.camera.zone.id,
+            business_id=self.camera.business_id,
+            property_id=self.camera.property_id,
+            traffic_count=self.tracker.total_detections,
+            unique_visitors=analytics_data['unique_visitors'],
+            avg_dwell_time=analytics_data['avg_dwell_time'],
+            max_dwell_time=analytics_data['max_dwell_time'],
+            total_dwell_time=analytics_data['total_dwell_time'],
+            heatmap_data=self.analyzer.get_heatmap().tolist(),
+            tracking_data=tracking_data  # Add the tracking data
+        )
+
+        self.db.add(analytics)
+        self.db.commit()
+
+        # Reset analytics state
+        self.analyzer.reset()
+        self.tracker.reset_statistics()
+
+    except Exception as e:
+        self.monitor.log_error(
+            camera_id=self.camera.id,
+            error_type="analytics_save_error",
+            error_msg=str(e),
+            stack_trace=traceback.format_exc()
+        )
+        self.db.rollback()
         """Save current analytics to database"""
         if not self.camera.zone:
             return
