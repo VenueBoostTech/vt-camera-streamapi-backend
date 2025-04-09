@@ -46,11 +46,11 @@ Here's the current status of the model training:
     -    Status: **Pending**
     -    Notes: Data collection and annotation in progress.
 -   **HEATMAP_GENERATION:**
-    -    Status: **Pending**
-    -    Notes: Data collection and annotation in progress.
+    -    Status: **Completed and Tested**
+    -    Notes: Model trained and successfully integrated. Testing confirmed accurate heatmap generation and analytics.
 -   **SHOPLIFTING_DETECTION:**
-    -    Status: **Pending**
-    -    Notes: Data collection and annotation in progress.
+    -    Status: **Completed and Tested**
+    -    Notes: Model trained and successfully integrated. Testing confirmed accurate shoplifting detection and analytics.
 -   **PEOPLE_COUNTER:**
     -    Status: **Pending**
     -    Notes: Data collection and annotation in progress.
