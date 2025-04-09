@@ -57,3 +57,29 @@ scp user@server:/path/to/training/checkout_counter/runs/detect/checkout_model/we
 - Training outputs will be saved in `runs/detect/checkout_model/`
 - The best model will be at `runs/detect/checkout_model/weights/best.pt`
 - Training parameters can be adjusted in the `train_checkout_model.py` script
+
+# 🔍 Running Test Modules with -m
+
+When you're testing Python modules like `test_person_tracker.py` or `test_checkout_monitoring.py`, it's best to use the `-m` flag from the project root. This ensures proper module resolution (especially for relative imports like `from services.footpath.tracker import PersonTracker`).
+
+## ✅ Why use -m?
+Python's `-m` flag tells it to treat the target as a module inside a package, so relative imports work correctly. If you just run the file directly (e.g., `python3 models_testing/test_person_tracker.py`), you'll often get errors like:
+
+```bash
+ModuleNotFoundError: No module named 'services'
+
+## ▶️ Usage
+
+Make sure you're in the project root directory, then run the desired test module like this:
+
+```bash
+python3 -m models_testing.test_person_tracker
+or
+python3 -m models_testing.test_checkout_monitoring
+
+cd vt-camera-streamapi-backend
+python3 -m models_testing.test_person_tracker
+python3 -m models_testing.test_checkout_monitoring
+```
+
+That's it! 🚀

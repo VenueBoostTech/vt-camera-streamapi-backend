@@ -1,14 +1,28 @@
 import cv2
 import numpy as np
-from ultralytics import YOLO
-import supervision as sv
+import json
+import os
 from collections import defaultdict
 import datetime
+from ultralytics import YOLO
+import supervision as sv
 
 class PersonTracker:
     def __init__(self, frame_resolution=(1920, 1080), confidence_threshold=0.5, zones=None):
+        # Set up a central models directory, two levels up from the current file
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        models_dir = os.path.join(os.path.dirname(os.path.dirname(current_dir)), 'training_models') # two levels up
+        os.makedirs(models_dir, exist_ok=True)
+        model_path = os.path.join(models_dir, 'yolov8x.pt')
+        
+        # Download the model if it doesn't exist
+        if not os.path.exists(model_path):
+            print(f"Downloading YOLOv8x model to {model_path}...")
+            YOLO('yolov8x.pt').save(model_path)
+            print("Download complete.")
+
         # Initialize YOLO model for person detection
-        self.model = YOLO('yolov8x.pt')
+        self.model = YOLO(model_path)
 
         # Initialize tracker
         self.tracker = sv.ByteTrack()
@@ -25,7 +39,7 @@ class PersonTracker:
 
         # Initialize statistics
         self.reset_statistics()
-
+        
     def reset_statistics(self):
         """Reset tracking statistics"""
         self.total_detections = 0

@@ -2,20 +2,25 @@ from ultralytics import YOLO
 import os
 import yaml
 
+# Get absolute paths for project structure
 current_dir = os.path.dirname(os.path.abspath(__file__))  # checkout_counter directory
 project_dir = os.path.dirname(os.path.dirname(current_dir))  # vt-camera-streamapi-backend root
-
+models_dir = os.path.join(project_dir, 'training_models')
+os.makedirs(models_dir, exist_ok=True)
 
 # Path to your dataset.yaml file
-dataset_path = '../data/checkout counter.v1i.yolov8/data.yaml'
+dataset_path = os.path.join(current_dir, '../data/checkout counter.v1i.yolov8/data.yaml')
 dataset_dir = os.path.dirname(os.path.abspath(dataset_path))
 
-# Start with a pre-trained YOLOv8 model (smaller for faster training)
-model = YOLO('yolov8s.pt')  # Use yolov8n.pt for even faster training
+# Start with a pre-trained YOLOv8 model from central models directory
+model_path = os.path.join(models_dir, 'yolov8s.pt')
+model = YOLO(model_path)  # Use yolov8n.pt for even faster training
 
 # Check if dataset.yaml exists
 if not os.path.exists(dataset_path):
     print(f"Error: Dataset file {dataset_path} not found!")
+    print(f"Current directory: {current_dir}")
+    print(f"Looking for: {dataset_path}")
     exit(1)
 
 # Load and modify the dataset.yaml with correct paths
@@ -28,8 +33,14 @@ try:
     dataset_config['val'] = os.path.join(dataset_dir, 'valid/images')
     dataset_config['test'] = os.path.join(dataset_dir, 'test/images')
     
+    # Verify paths exist
+    for path_key in ['train', 'val', 'test']:
+        path = dataset_config[path_key]
+        if not os.path.exists(path):
+            print(f"Warning: {path_key} path does not exist: {path}")
+    
     # Save modified config
-    modified_yaml_path = 'modified_data.yaml'
+    modified_yaml_path = os.path.join(current_dir, 'modified_data.yaml')
     with open(modified_yaml_path, 'w') as f:
         yaml.dump(dataset_config, f)
     
@@ -51,4 +62,12 @@ results = model.train(
     project=os.path.join(project_dir, 'runs/detect')  # Set explicit output path
 )
 
-print(f"Training completed. Model saved to {os.path.join('runs', 'detect', 'checkout_model')}")
+# Save the trained model to the central models directory too
+best_model_path = os.path.join(project_dir, 'runs/detect/checkout_model/weights/best.pt')
+if os.path.exists(best_model_path):
+    import shutil
+    checkout_model_path = os.path.join(models_dir, 'checkout_counter.pt')
+    shutil.copy(best_model_path, checkout_model_path)
+    print(f"Model also saved to central models directory: {checkout_model_path}")
+
+print(f"Training completed. Model saved to {os.path.join(project_dir, 'runs/detect/checkout_model')}")
