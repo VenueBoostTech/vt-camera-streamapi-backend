@@ -1,6 +1,19 @@
 import cv2
 import numpy as np
 import json
+import os
+import sys
+
+# Get the absolute path to the current file's directory
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Navigate up one level to the project root
+project_root = os.path.dirname(current_dir)
+
+# Add the project root to the Python path
+sys.path.insert(0, project_root)
+
+# Now import the PersonTracker
 from services.footpath.tracker import PersonTracker
 
 # Define zones for a test store layout
@@ -11,6 +24,21 @@ zones = {
 }
 
 def test_with_video(video_path, output_path=None):
+    # Get project root directory for consistent paths
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.dirname(current_dir) # Corrected: go up one level
+
+    print(f"Project root: {project_root}")
+
+    # Construct the correct absolute path to the video
+    video_path = os.path.join(project_root, "training_assets", "videos", "person_tracker.mp4")
+
+
+    if output_path and not os.path.isabs(output_path):
+        output_path = os.path.join(project_root, output_path)
+        # Create output directory if it doesn't exist
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    
     # Initialize the tracker with test zones
     tracker = PersonTracker(confidence_threshold=0.4, zones=zones)
     
@@ -87,6 +115,6 @@ def test_with_video(video_path, output_path=None):
 
 if __name__ == "__main__":
     # Test with a video file - replace with your test video path
-    video_path = "test-video.mp4"  # Update this
-    output_path = "output.mp4"
+    video_path = "person_tracker.mp4"
+    output_path = "person_tracker_output.mp4"
     test_with_video(video_path, output_path)
