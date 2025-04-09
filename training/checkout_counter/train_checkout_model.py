@@ -1,45 +1,10 @@
-# from ultralytics import YOLO
-# import os
-# import yaml
-
-# # Path to your dataset.yaml file (from the downloaded Roboflow dataset)
-# dataset_path = '../data/checkout counter.v1i.yolov8/data.yaml'
-
-# # Start with a pre-trained YOLOv8 model (smaller for faster training)
-# model = YOLO('yolov8s.pt')  # Use yolov8n.pt for even faster training
-
-# # Check if dataset.yaml exists
-# if not os.path.exists(dataset_path):
-#     print(f"Error: Dataset file {dataset_path} not found!")
-#     exit(1)
-
-# # Load the dataset.yaml to ensure it's properly formatted
-# try:
-#     with open(dataset_path, 'r') as f:
-#         dataset_config = yaml.safe_load(f)
-#     print(f"Dataset config: {dataset_config}")
-# except Exception as e:
-#     print(f"Error loading dataset config: {str(e)}")
-#     exit(1)
-
-# # Train the model
-# print("Starting model training...")
-# results = model.train(
-#     data=dataset_path,
-#     epochs=50,           # Adjust based on your needs
-#     imgsz=640,           # Image size
-#     batch=8,             # Reduce if you have memory issues
-#     patience=10,         # Early stopping patience
-#     name='checkout_model'
-# )
-
-# # Display training results
-# print(f"Training completed. Model saved to {os.path.join('runs', 'detect', 'checkout_model')}")
-
-
 from ultralytics import YOLO
 import os
 import yaml
+
+current_dir = os.path.dirname(os.path.abspath(__file__))  # checkout_counter directory
+project_dir = os.path.dirname(os.path.dirname(current_dir))  # vt-camera-streamapi-backend root
+
 
 # Path to your dataset.yaml file
 dataset_path = '../data/checkout counter.v1i.yolov8/data.yaml'
@@ -82,7 +47,8 @@ results = model.train(
     imgsz=640,
     batch=8,
     patience=10,
-    name='checkout_model'
+    name='checkout_model',
+    project=os.path.join(project_dir, 'runs/detect')  # Set explicit output path
 )
 
 print(f"Training completed. Model saved to {os.path.join('runs', 'detect', 'checkout_model')}")
