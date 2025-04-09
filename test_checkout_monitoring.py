@@ -2,10 +2,11 @@ import cv2
 import numpy as np
 import json
 import datetime
-from services.checkout_monitoring import CheckoutMonitoringService
-from services.footpath.tracker import PersonTracker
+import os
+from checkout_monitoring import CheckoutMonitoringService
+from services.footpath.tracker import PersonTracker  # Your existing tracker
 
-def test_checkout_monitoring(video_path, model_path=None, output_path=None):
+def test_checkout_monitoring(video_path, model_path, output_path=None):
     """Test the checkout monitoring service with a video file"""
     # Initialize services
     checkout_service = CheckoutMonitoringService(model_path=model_path, confidence_threshold=0.4)
@@ -45,7 +46,7 @@ def test_checkout_monitoring(video_path, model_path=None, output_path=None):
         person_detections = person_tracker.update(frame)
         
         # Process frame for checkout counter detection
-        checkout_detections = checkout_service.detect_checkout_counters(frame)
+        checkouts = checkout_service.detect_checkout_counters(frame)
         
         # Analyze interactions between people and checkout counters
         checkout_service.analyze_customer_interactions(person_detections)
@@ -109,7 +110,7 @@ def test_checkout_monitoring(video_path, model_path=None, output_path=None):
 if __name__ == "__main__":
     # Update these paths for your environment
     video_path = "test-video.mp4"  # Your test video
-    model_path = "checkout_counter_model.pt"  # Your Roboflow model
+    model_path = "runs/detect/checkout_model/weights/best.pt"  # Your trained model path
     output_path = "checkout_monitoring_output.mp4"
     
     test_checkout_monitoring(video_path, model_path, output_path)

@@ -181,3 +181,21 @@ results/
 *.jpg
 *.jpeg
 *.svg
+
+
+# Datasets
+training/data/
+training/*/data/
+training/*/*/*.yaml  # Generated YAML files
+checkout counter.v1i.yolov8/
+
+# Model files
+*.pt
+yolov8*.pt
+runs/
+training/checkout_counter/yolov8s.pt
+training/checkout_counter/modified_data.yaml
+
+# Training outputs
+training/*/runs/
+training/checkout_counter/runs/
