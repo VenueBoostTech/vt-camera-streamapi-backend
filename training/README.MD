@@ -9,25 +9,67 @@ training/
 ├── checkout_counter/     # Training code for checkout counter detection
 │   ├── train_checkout_model.py
 │   └── modified_data.yaml (generated)
+├── people_counter/
+│   ├── train_people_counter.py
+│   └── modified_people_data.yaml
+├── face_detection/
+│   ├── train_face_detection_model.py
+│   └── modified_data.yaml
+├── general_object_detection/
+│   ├── train_general_object_detection.py
+│   └── modified_data.yaml
+├── vehicle_detection/
+│   ├── train_vehicle_detection.py
+│   └── modified_data.yaml
+├── ppe_detection/
+│   ├── train_ppe_detection.py
+│   └── modified_data.yaml
 └── data/                 # Datasets (not included in git)
-    └── checkout counter.v1i.yolov8/
-        ├── test/
-        ├── train/
-        ├── valid/
-        └── data.yaml
-    └── shoplifting.v1i.yolov11/
-        ├── test/
-        ├── train/
-        ├── valid/
-        └── data.yaml
-    └── demographics.v1i.yolov11/
-        ├── test/
-        ├── train/
-        ├── valid/
-        └── data.yaml
-    └── people_counter/
-        ├── train_people_counter.py
-        └── modified_people_data.yaml
+    ├── checkout counter.v1i.yolov8/
+    │   ├── test/
+    │   ├── train/
+    │   ├── valid/
+    │   └── data.yaml
+    ├── shoplifting.v1i.yolov11/
+    │   ├── test/
+    │   ├── train/
+    │   ├── valid/
+    │   └── data.yaml
+    ├── demographics.v1i.yolov11/
+    │   ├── test/
+    │   ├── train/
+    │   ├── valid/
+    │   └── data.yaml
+    ├── vehicle_detection.v1i.yolov11/
+    │   ├── test/
+    │   ├── train/
+    │   ├── valid/
+    │   └── data.yaml
+    ├── ppe_detection.v1i.yolov11/
+    │   ├── test/
+    │   ├── train/
+    │   ├── valid/
+    │   └── data.yaml
+    ├── face_detection.v1i.yolov11/
+    │   ├── test/
+    │   ├── train/
+    │   ├── valid/
+    │   └── data.yaml
+    ├── general_object_detection.v1i.yolov11/
+    │   ├── test/
+    │   ├── train/
+    │   ├── valid/
+    │   └── data.yaml
+    ├── people_counter.v1i.yolov11/
+    │   ├── test/
+    │   ├── train/
+    │   ├── valid/
+    │   └── data.yaml
+    ├── checkout_counter.v1i.yolov8/
+    │   ├── test/
+    │   ├── train/
+    │   ├── valid/
+    │   └── data.yaml
 
 services/
 ├── footpath/
@@ -38,6 +80,9 @@ services/
 └── demographics_detector.py # Demographics detection service
 └── general_object_detector.py # General object detection service
 └── people_counter.py # People counter service
+└── vehicle_detector.py # Vehicle detection service
+└── ppe_detector.py # PPE detection service
+└── face_detector.py # Face detection service
 ```
 
 ## Server Deployment
@@ -51,6 +96,12 @@ scp -r "training/data/checkout counter.v1i.yolov8" user@server:/path/to/training
 scp -r "training/data/shoplifting.v1i.yolov11" user@server:/path/to/training/data/
 scp -r "training/data/demographics.v1i.yolov11" user@server:/path/to/training/data/
 scp -r "training/data/People Detection -General-.v8i.yolov11" user@server:/path/to/training/data/
+scp -r "training/data/vehicle_detection.v1i.yolov11" user@server:/path/to/training/data/
+scp -r "training/data/ppe_detection.v1i.yolov11" user@server:/path/to/training/data/
+scp -r "training/data/face_detection.v1i.yolov11" user@server:/path/to/training/data/
+scp -r "training/data/general_object_detection.v1i.yolov11" user@server:/path/to/training/data/
+scp -r "training/data/people_counter.v1i.yolov11" user@server:/path/to/training/data/
+scp -r "training/data/checkout_counter.v1i.yolov8" user@server:/path/to/training/data/
 ```
 
 ### 2. Base Model
@@ -66,6 +117,18 @@ cd /path/to/training/demographics_detector
 curl -L https://github.com/ultralytics/assets/releases/download/v0.0.0/yolov8s.pt -o yolov8s.pt
 
 cd /path/to/training/people_counter
+curl -L https://github.com/ultralytics/assets/releases/download/v0.0.0/yolov8s.pt -o yolov8s.pt
+
+cd /path/to/training/vehicle_detector
+curl -L https://github.com/ultralytics/assets/releases/download/v0.0.0/yolov8s.pt -o yolov8s.pt
+
+cd /path/to/training/ppe_detector
+curl -L https://github.com/ultralytics/assets/releases/download/v0.0.0/yolov8s.pt -o yolov8s.pt
+
+cd /path/to/training/face_detector
+curl -L https://github.com/ultralytics/assets/releases/download/v0.0.0/yolov8s.pt -o yolov8s.pt
+
+cd /path/to/training/general_object_detector
 curl -L https://github.com/ultralytics/assets/releases/download/v0.0.0/yolov8s.pt -o yolov8s.pt
 ```
 
@@ -89,6 +152,18 @@ python train_demographics.py
 
 cd /path/to/training/people_counter
 python train_people_counter.py
+
+cd /path/to/training/vehicle_detector
+python train_vehicle_detector.py
+
+cd /path/to/training/ppe_detector
+python train_ppe_detector.py
+
+cd /path/to/training/face_detector
+python train_face_detector.py
+
+cd /path/to/training/general_object_detector
+python train_general_object_detector.py
 ```
 
 ### 5. Model Retrieval
@@ -101,6 +176,14 @@ scp user@server:/path/to/training/shoplifting_detection/runs/detect/shoplifting_
 scp user@server:/path/to/training/demographics_detector/runs/detect/demographics_model/weights/best.pt ./local/path/
 
 scp user@server:/path/to/training/people_counter/runs/detect/people_counter_model/weights/best.pt ./local/path/
+
+scp user@server:/path/to/training/vehicle_detector/runs/detect/vehicle_detector_model/weights/best.pt ./local/path/
+
+scp user@server:/path/to/training/ppe_detector/runs/detect/ppe_detector_model/weights/best.pt ./local/path/
+
+scp user@server:/path/to/training/face_detector/runs/detect/face_detector_model/weights/best.pt ./local/path/
+
+scp user@server:/path/to/training/general_object_detector/runs/detect/general_object_detector_model/weights/best.pt ./local/path/
 ```
 
 ## Available Services
@@ -114,6 +197,9 @@ The project includes these analytical services:
 5. **Demographics Detector**: Analyzes age and gender distributions
 6. **General Object Detector**: Detects and tracks various objects
 7. **People Counter**: Counts people entering and exiting spaces
+8. **Vehicle Detector**: Detects and tracks vehicles
+9. **PPE Detector**: Detects the use of personal protective equipment
+10. **Face Detector**: Detects and tracks faces
 
 ## Testing Services
 
@@ -126,6 +212,10 @@ python3 -m models_testing.test_heatmap_generator
 python3 -m models_testing.test_shoplifting_detector
 python3 -m models_testing.test_demographics_detector
 python3 -m models_testing.test_people_counter
+python3 -m models_testing.test_vehicle_detector
+python3 -m models_testing.test_ppe_detector
+python3 -m models_testing.test_face_detector
+python3 -m models_testing.test_general_object_detector
 ```
 
 ## Notes
@@ -137,6 +227,9 @@ python3 -m models_testing.test_people_counter
 - Shoplifting detector outputs are stored in `models_testing/outputs/shoplifting`
 - Demographics detector outputs are stored in `models_testing/outputs/demographics`
 - General object detector outputs are stored in `models_testing/outputs/general_object`
+- Vehicle detector outputs are stored in `models_testing/outputs/vehicle`
+- PPE detector outputs are stored in `models_testing/outputs/ppe`
+- Face detector outputs are stored in `models_testing/outputs/face`
 
 # 🔍 Running Test Modules with -m
 
@@ -180,6 +273,26 @@ or
 python3 -m models_testing.test_people_counter
 ```
 
+or
+```bash
+python3 -m models_testing.test_vehicle_detector
+```
+
+or
+```bash
+python3 -m models_testing.test_ppe_detector
+```
+
+or
+```bash
+python3 -m models_testing.test_face_detector
+```
+
+or
+```bash
+python3 -m models_testing.test_general_object_detector
+```
+
 From project root:
 ```bash
 cd vt-camera-streamapi-backend
@@ -189,6 +302,10 @@ python3 -m models_testing.test_heatmap_generator
 python3 -m models_testing.test_shoplifting_detector
 python3 -m models_testing.test_demographics_detector
 python3 -m models_testing.test_people_counter
+python3 -m models_testing.test_vehicle_detector
+python3 -m models_testing.test_ppe_detector
+python3 -m models_testing.test_face_detector
+python3 -m models_testing.test_general_object_detector
 ```
 
 That's it! 🚀
