@@ -25,6 +25,9 @@ training/
         ├── train/
         ├── valid/
         └── data.yaml
+    └── people_counter/
+        ├── train_people_counter.py
+        └── modified_people_data.yaml
 
 services/
 ├── footpath/
@@ -34,6 +37,7 @@ services/
 └── shoplifting_detection.py # Shoplifting detection service
 └── demographics_detector.py # Demographics detection service
 └── general_object_detector.py # General object detection service
+└── people_counter.py # People counter service
 ```
 
 ## Server Deployment
@@ -46,6 +50,7 @@ The complete dataset must be manually transferred to the server:
 scp -r "training/data/checkout counter.v1i.yolov8" user@server:/path/to/training/data/
 scp -r "training/data/shoplifting.v1i.yolov11" user@server:/path/to/training/data/
 scp -r "training/data/demographics.v1i.yolov11" user@server:/path/to/training/data/
+scp -r "training/data/People Detection -General-.v8i.yolov11" user@server:/path/to/training/data/
 ```
 
 ### 2. Base Model
@@ -58,6 +63,9 @@ cd /path/to/training/shoplifting_detection
 curl -L https://github.com/ultralytics/assets/releases/download/v0.0.0/yolov8s.pt -o yolov8s.pt
 
 cd /path/to/training/demographics_detector
+curl -L https://github.com/ultralytics/assets/releases/download/v0.0.0/yolov8s.pt -o yolov8s.pt
+
+cd /path/to/training/people_counter
 curl -L https://github.com/ultralytics/assets/releases/download/v0.0.0/yolov8s.pt -o yolov8s.pt
 ```
 
@@ -78,6 +86,9 @@ python train_shoplifting_model.py
 
 cd /path/to/training/demographics_detector
 python train_demographics.py
+
+cd /path/to/training/people_counter
+python train_people_counter.py
 ```
 
 ### 5. Model Retrieval
@@ -88,6 +99,8 @@ scp user@server:/path/to/training/checkout_counter/runs/detect/checkout_model/we
 scp user@server:/path/to/training/shoplifting_detection/runs/detect/shoplifting_model/weights/best.pt ./local/path/
 
 scp user@server:/path/to/training/demographics_detector/runs/detect/demographics_model/weights/best.pt ./local/path/
+
+scp user@server:/path/to/training/people_counter/runs/detect/people_counter_model/weights/best.pt ./local/path/
 ```
 
 ## Available Services
@@ -100,6 +113,7 @@ The project includes these analytical services:
 4. **Shoplifting Detector**: Detects suspicious shoplifting behaviors
 5. **Demographics Detector**: Analyzes age and gender distributions
 6. **General Object Detector**: Detects and tracks various objects
+7. **People Counter**: Counts people entering and exiting spaces
 
 ## Testing Services
 
@@ -111,6 +125,7 @@ python3 -m models_testing.test_checkout_monitoring
 python3 -m models_testing.test_heatmap_generator
 python3 -m models_testing.test_shoplifting_detector
 python3 -m models_testing.test_demographics_detector
+python3 -m models_testing.test_people_counter
 ```
 
 ## Notes
@@ -160,6 +175,11 @@ or
 python3 -m models_testing.test_demographics_detector
 ```
 
+or
+```bash
+python3 -m models_testing.test_people_counter
+```
+
 From project root:
 ```bash
 cd vt-camera-streamapi-backend
@@ -168,6 +188,7 @@ python3 -m models_testing.test_checkout_monitoring
 python3 -m models_testing.test_heatmap_generator
 python3 -m models_testing.test_shoplifting_detector
 python3 -m models_testing.test_demographics_detector
+python3 -m models_testing.test_people_counter
 ```
 
 That's it! 🚀

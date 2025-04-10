@@ -1,0 +1,15 @@
+names:
+- person
+nc: 1
+roboflow:
+  license: CC BY 4.0
+  project: people-detection-general
+  url: https://universe.roboflow.com/mohamed-traore-2ekkp/people-detection-general/dataset/8
+  version: 8
+  workspace: mohamed-traore-2ekkp
+test: /Users/bleonacela/Documents/Griseld-Project/vt-camera-streamapi-backend/training/data/People
+  Detection -General-.v8i.yolov11/test/images
+train: /Users/bleonacela/Documents/Griseld-Project/vt-camera-streamapi-backend/training/data/People
+  Detection -General-.v8i.yolov11/train/images
+val: /Users/bleonacela/Documents/Griseld-Project/vt-camera-streamapi-backend/training/data/People
+  Detection -General-.v8i.yolov11/valid/images

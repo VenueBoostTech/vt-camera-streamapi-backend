@@ -52,8 +52,8 @@ Here's the current status of the model training:
     -    Status: **Completed and Tested**
     -    Notes: Model trained and successfully integrated. Testing confirmed accurate shoplifting detection and analytics.
 -   **PEOPLE_COUNTER:**
-    -    Status: **Pending**
-    -    Notes: Data collection and annotation in progress.
+    -    Status: **Completed and Tested**
+    -    Notes: Model trained and successfully integrated. Testing confirmed accurate people counting and analytics.
 -   **GENERAL_OBJECT_DETECTION:**
     -   Status: **Completed and Tested**
     -   Notes: Model trained and successfully integrated. Testing confirmed accurate object detection and analytics.
