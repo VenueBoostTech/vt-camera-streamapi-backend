@@ -40,8 +40,8 @@ Here's the current status of the model training:
     -    Status: **Completed and Tested**
     -    Notes: Model trained and integrated. Successfully tracks queue lengths and checkout efficiency.
 -   **DEMOGRAPHICS:**
-    -    Status: **Pending**
-    -    Notes: Data collection and annotation in progress.
+    -    Status: **Completed and Tested**
+    -    Notes: Model trained and successfully integrated. Testing confirmed accurate demographics detection and analytics.
 -   **FACE_DETECTION:**
     -    Status: **Pending**
     -    Notes: Data collection and annotation in progress.
