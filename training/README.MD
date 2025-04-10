@@ -33,7 +33,7 @@ services/
 └── heatmap_generator.py   # Heatmap generation service
 └── shoplifting_detection.py # Shoplifting detection service
 └── demographics_detector.py # Demographics detection service
-
+└── general_object_detector.py # General object detection service
 ```
 
 ## Server Deployment
@@ -99,6 +99,7 @@ The project includes these analytical services:
 3. **Heatmap Generator**: Creates density heatmaps from tracking data
 4. **Shoplifting Detector**: Detects suspicious shoplifting behaviors
 5. **Demographics Detector**: Analyzes age and gender distributions
+6. **General Object Detector**: Detects and tracks various objects
 
 ## Testing Services
 
@@ -120,6 +121,7 @@ python3 -m models_testing.test_demographics_detector
 - Service outputs (heatmaps, videos, etc.) are stored in `models_testing/outputs`
 - Shoplifting detector outputs are stored in `models_testing/outputs/shoplifting`
 - Demographics detector outputs are stored in `models_testing/outputs/demographics`
+- General object detector outputs are stored in `models_testing/outputs/general_object`
 
 # 🔍 Running Test Modules with -m
 
