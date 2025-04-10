@@ -1,0 +1,13 @@
+names:
+- '0'
+- '1'
+nc: 2
+roboflow:
+  license: CC BY 4.0
+  project: shoplifting-tiqde
+  url: https://universe.roboflow.com/university-of-boumerdes/shoplifting-tiqde/dataset/1
+  version: 1
+  workspace: university-of-boumerdes
+test: /Users/bleonacela/Documents/Griseld-Project/vt-camera-streamapi-backend/training/data/shoplifting.v1i.yolov11/test/images
+train: /Users/bleonacela/Documents/Griseld-Project/vt-camera-streamapi-backend/training/data/shoplifting.v1i.yolov11/train/images
+val: /Users/bleonacela/Documents/Griseld-Project/vt-camera-streamapi-backend/training/data/shoplifting.v1i.yolov11/valid/images
